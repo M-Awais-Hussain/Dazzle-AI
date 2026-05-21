@@ -1,0 +1,95 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ayyy/core/errors/exceptions.dart';
+import 'package:ayyy/features/user/marketplace/domain/ai_creation.dart';
+
+final aiCreationRepositoryProvider = Provider<AiCreationRepository>((ref) {
+  return AiCreationRepository(Supabase.instance.client);
+});
+
+class AiCreationRepository {
+  final SupabaseClient _supabase;
+  static const _table = 'ai_creations';
+  static const _bucket = 'ai-room-generations';
+
+  AiCreationRepository(this._supabase);
+
+  Future<void> saveCreation(AiCreation creation) async {
+    try {
+      await _supabase.from(_table).insert(creation.toInsertJson());
+    } catch (e) {
+      throw ServerException('Failed to save AI creation: $e');
+    }
+  }
+
+  Future<List<AiCreation>> getCreations({
+    required String userId,
+    int limit = 20,
+    int offset = 0,
+    String? searchQuery,
+    String? sortBy, // 'newest' | 'oldest' | 'product'
+  }) async {
+    try {
+      dynamic query = _supabase.from(_table).select().eq('user_id', userId);
+
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        query = query.ilike('product_name', '%$searchQuery%');
+      }
+
+      if (sortBy == 'oldest') {
+        query = query.order('created_at', ascending: true);
+      } else if (sortBy == 'product') {
+        query = query.order('product_name', ascending: true);
+      } else {
+        // default newest
+        query = query.order('created_at', ascending: false);
+      }
+
+      final response = await query.range(offset, offset + limit - 1);
+      return (response as List)
+          .map((json) => AiCreation.fromJson(Map<String, dynamic>.from(json as Map)))
+          .toList();
+    } catch (e) {
+      throw ServerException('Failed to fetch AI creations: $e');
+    }
+  }
+
+  Future<AiCreation> getCreationById(String id) async {
+    try {
+      final response = await _supabase.from(_table).select().eq('id', id).single();
+      return AiCreation.fromJson(Map<String, dynamic>.from(response));
+    } catch (e) {
+      throw ServerException('Failed to fetch AI creation details: $e');
+    }
+  }
+
+  Future<void> deleteCreation(String id, {List<String>? imageUrlsToDelete}) async {
+    try {
+      // 1. Delete DB record
+      await _supabase.from(_table).delete().eq('id', id);
+
+      // 2. Safely parse and delete images from Storage bucket
+      if (imageUrlsToDelete != null && imageUrlsToDelete.isNotEmpty) {
+        final paths = imageUrlsToDelete.map((url) {
+          try {
+            final uri = Uri.parse(url);
+            final segments = uri.pathSegments;
+            final bucketIndex = segments.indexOf(_bucket);
+            if (bucketIndex != -1 && bucketIndex < segments.length - 1) {
+              return segments.sublist(bucketIndex + 1).join('/');
+            }
+          } catch (_) {
+            // Ignore parsing errors for mock or external URLs
+          }
+          return '';
+        }).where((path) => path.isNotEmpty).toList();
+
+        if (paths.isNotEmpty) {
+          await _supabase.storage.from(_bucket).remove(paths);
+        }
+      }
+    } catch (e) {
+      throw ServerException('Failed to delete AI creation: $e');
+    }
+  }
+}
