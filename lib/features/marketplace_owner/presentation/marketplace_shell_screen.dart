@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ayyy/core/widgets/dazzle_bottom_nav.dart';
 import 'package:ayyy/features/marketplace_owner/dashboard/presentation/marketplace_dashboard_screen.dart';
 import 'package:ayyy/features/marketplace_owner/products/presentation/products_list_screen.dart';
-import 'package:ayyy/features/marketplace_owner/orders/presentation/marketplace_orders_screen.dart';
 import 'package:ayyy/features/marketplace_owner/analytics/presentation/analytics_screen.dart';
 import 'package:ayyy/features/marketplace_owner/profile/presentation/marketplace_profile_screen.dart';
 
@@ -21,7 +20,6 @@ class MarketplaceShellScreen extends ConsumerWidget {
         children: const [
           MarketplaceDashboardScreen(),
           ProductsListScreen(),
-          MarketplaceOrdersScreen(),
           AnalyticsScreen(),
           MarketplaceProfileScreen(),
         ],

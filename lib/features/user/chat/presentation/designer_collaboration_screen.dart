@@ -23,6 +23,7 @@ class _DesignerCollaborationScreenState extends ConsumerState<DesignerCollaborat
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String? _chatRoomId;
+  String? _requestId;
   bool _isLoading = true;
 
   @override
@@ -55,6 +56,24 @@ class _DesignerCollaborationScreenState extends ConsumerState<DesignerCollaborat
           .maybeSingle();
       if (dbRoom != null) {
         resolvedRoomId = widget.id;
+        _requestId = dbRoom['request_id'] as String?;
+        
+        // If _requestId is missing (e.g. chat room not updated), find the latest request
+        final dbDesignerId = dbRoom['designer_id'] as String?;
+        final dbUserId = dbRoom['user_id'] as String?;
+        if (_requestId == null && dbDesignerId != null && dbUserId != null) {
+          final latestReq = await Supabase.instance.client
+              .from('designer_requests')
+              .select('id')
+              .eq('user_id', dbUserId)
+              .eq('designer_id', dbDesignerId)
+              .order('created_at', ascending: false)
+              .limit(1)
+              .maybeSingle();
+          if (latestReq != null) {
+            _requestId = latestReq['id'] as String;
+          }
+        }
       }
     } catch (_) {}
 
@@ -66,6 +85,7 @@ class _DesignerCollaborationScreenState extends ConsumerState<DesignerCollaborat
         if (request != null) {
           targetUserId = request.userId;
           targetDesignerId = request.designerId;
+          _requestId = request.id;
           resolvedRoomId = await ref.read(chatControllerProvider.notifier).createOrGetChatRoom(
             userId: targetUserId,
             designerId: targetDesignerId,
@@ -200,7 +220,8 @@ class _DesignerCollaborationScreenState extends ConsumerState<DesignerCollaborat
                         TextButton(
                           onPressed: () {
                             Navigator.pop(context); // Close dialog
-                            context.push('/review/${widget.id}');
+                            final idToPass = _requestId ?? widget.id;
+                            context.push('/review/$idToPass');
                           },
                           child: Text('FINISH', style: GoogleFonts.inter(color: AppColors.success, fontWeight: FontWeight.bold)),
                         ),
@@ -382,6 +403,10 @@ class _ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (message.isAttachment && message.attachmentName == 'Final Design' && message.attachmentUrl != null) {
+      return _buildFinalDesignCard(context);
+    }
+
     final isImage = _isImageUrl(message.text);
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -430,6 +455,141 @@ class _ChatBubble extends StatelessWidget {
                       height: 1.4,
                     ),
                   ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _formatTime(message.timestamp),
+            style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFinalDesignCard(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: MediaQuery.of(context).size.width * 0.75,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F3EE),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Stack(
+                  children: [
+                    Image.network(
+                      message.attachmentUrl!,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'FINAL DESIGN',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Design Completed',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        message.text,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => Dialog(
+                              insetPadding: EdgeInsets.zero,
+                              backgroundColor: Colors.black,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  InteractiveViewer(
+                                    child: Image.network(message.attachmentUrl!, fit: BoxFit.contain),
+                                  ),
+                                  Positioned(
+                                    top: 40,
+                                    right: 16,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                      onPressed: () => Navigator.pop(context),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.open_in_full, size: 18, color: AppColors.textPrimary),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Open Design',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 4),
           Text(

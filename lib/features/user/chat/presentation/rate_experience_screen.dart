@@ -9,7 +9,7 @@ import 'package:ayyy/features/designer/requests/domain/designer_request.dart';
 import 'package:ayyy/features/common/review/application/review_controller.dart';
 
 final designerRequestDetailProvider = FutureProvider.family.autoDispose<DesignerRequest?, String>((ref, id) async {
-  return ref.watch(designerRequestRepositoryProvider).getRequestById(id);
+  return ref.watch(designerRequestRepositoryProvider).getRequestByIdForUser(id);
 });
 
 class RateExperienceScreen extends ConsumerStatefulWidget {

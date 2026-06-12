@@ -9,10 +9,10 @@ import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
 import 'package:ayyy/features/user/marketplace/application/ai_creations_provider.dart';
 import 'package:ayyy/features/user/marketplace/application/ai_room_controller.dart';
-import 'package:ayyy/features/user/marketplace/application/cart_controller.dart';
 import 'package:ayyy/features/user/marketplace/data/product_repository.dart';
 import 'package:ayyy/features/user/marketplace/domain/ai_creation.dart';
 import 'package:ayyy/features/user/marketplace/domain/product.dart';
+import 'package:ayyy/features/user/designer_directory/application/designer_directory_providers.dart';
 
 class AiCreationDetailScreen extends ConsumerStatefulWidget {
   final String creationId;
@@ -347,6 +347,40 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
               ],
             ),
           ),
+          
+          const SizedBox(height: 10),
+          
+          // ── Share with Designer CTA ──
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  ref.read(pendingHireAttachmentProvider.notifier).setMultiple([creation.generatedImageUrl]);
+                  context.push('/designers');
+                },
+                icon: const Icon(Icons.people_outline, size: 16),
+                label: Text(
+                  'HIRE DESIGNER',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textPrimary,
+                  side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  backgroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ),
 
           const SizedBox(height: 40),
         ],
@@ -528,8 +562,15 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
 
       if (context.mounted) {
         Navigator.pop(context); // pop loading
-        ref.read(aiRoomControllerProvider.notifier).reset();
-        context.push('/marketplace/product/${product.id}/ai-room');
+        
+        // Prepare canvas with existing generation data
+        ref.read(aiRoomControllerProvider.notifier).prepareCanvas(
+          product: product,
+          selectedImageUrl: creation.selectedProductImageUrl,
+          roomImagePath: creation.roomImageUrl,
+        );
+        
+        context.push('/marketplace/product/${product.id}/canvas-editor');
       }
     } catch (e) {
       if (context.mounted) {
@@ -754,7 +795,7 @@ class _ProductIntegrationCard extends ConsumerWidget {
                     Row(
                       children: [
                         Text(
-                          '\$${product.price.toStringAsFixed(0)}',
+                          'Rs. ${product.price.toStringAsFixed(0)}',
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -803,34 +844,12 @@ class _ProductIntegrationCard extends ConsumerWidget {
             width: double.infinity,
             height: 48,
             child: ElevatedButton.icon(
-              onPressed: inStock
-                  ? () {
-                      ref.read(cartControllerProvider.notifier).addItem(product);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Added "${product.name}" to cart!',
-                            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
-                          ),
-                          duration: const Duration(seconds: 3),
-                          backgroundColor: AppColors.success,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          action: SnackBarAction(
-                            label: 'VIEW CART',
-                            textColor: Colors.white,
-                            onPressed: () {
-                              context.push('/marketplace/cart');
-                            },
-                          ),
-                        ),
-                      );
-                      context.push('/marketplace/cart');
-                    }
-                  : null,
-              icon: const Icon(Icons.shopping_bag_outlined, size: 16),
+              onPressed: () {
+                context.push('/marketplace/product/${product.id}');
+              },
+              icon: const Icon(Icons.arrow_forward, size: 16),
               label: Text(
-                'ORDER INTEGRATED PIECE',
+                'VIEW PRODUCT DETAILS',
                 style: GoogleFonts.inter(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,

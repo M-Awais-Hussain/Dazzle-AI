@@ -13,11 +13,11 @@ class ChatController extends Notifier<AsyncValue<void>> {
     return const AsyncData(null);
   }
 
-  Future<void> sendMessage(String chatRoomId, String content, String senderId) async {
+  Future<void> sendMessage(String chatRoomId, String content, String senderId, {bool isAttachment = false, String? attachmentUrl, String? attachmentName}) async {
     state = const AsyncLoading();
     try {
       final repository = ref.read(chatRepositoryProvider);
-      await repository.sendMessage(chatRoomId, content, senderId);
+      await repository.sendMessage(chatRoomId, content, senderId, isAttachment: isAttachment, attachmentUrl: attachmentUrl, attachmentName: attachmentName);
       state = const AsyncData(null);
     } catch (e, st) {
       state = AsyncError(e, st);

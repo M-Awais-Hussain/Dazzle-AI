@@ -152,7 +152,7 @@ class MarketplaceProductCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '\$${product.price.toStringAsFixed(0)}',
+                        'Rs. ${product.price.toStringAsFixed(0)}',
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,

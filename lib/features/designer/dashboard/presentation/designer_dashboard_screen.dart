@@ -71,8 +71,8 @@ class DesignerDashboardScreen extends ConsumerWidget {
                   const SizedBox(width: 14),
                   Expanded(
                     child: _StatCard(
-                      icon: Icons.attach_money,
-                      value: '\$${stats.totalEarnings.toStringAsFixed(0)}',
+                      icon: Icons.currency_rupee,
+                      value: 'Rs. ${stats.totalEarnings.toStringAsFixed(0)}',
                       label: 'Earnings',
                       iconColor: AppColors.success,
                     ),

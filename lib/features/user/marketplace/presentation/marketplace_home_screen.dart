@@ -234,7 +234,7 @@ class _MarketplaceHomeScreenState extends ConsumerState<MarketplaceHomeScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    '\$${product.price.toStringAsFixed(0)}',
+                                    'Rs. ${product.price.toStringAsFixed(0)}',
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,

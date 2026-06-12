@@ -143,7 +143,7 @@ class PublicDesignerProfileScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _ProfileStat(value: '\$${consultationPrice.toStringAsFixed(0)}', label: 'Consultation'),
+                      _ProfileStat(value: 'Rs. ${consultationPrice.toStringAsFixed(0)}', label: 'Consultation'),
                       Container(width: 1, height: 32, color: AppColors.border),
                       _ProfileStat(value: '$experience Yrs', label: 'Experience'),
                       Container(width: 1, height: 32, color: AppColors.border),

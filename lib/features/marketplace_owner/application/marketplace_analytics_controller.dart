@@ -54,3 +54,13 @@ final revenueGrowthProvider = FutureProvider<Map<String, double>>((ref) async {
   final repo = ref.watch(marketplaceAnalyticsRepositoryProvider);
   return repo.getRevenueGrowth();
 });
+
+/// Order stats provider stub (moved from deleted order controller)
+final orderStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  return {
+    'total_revenue': 0.0,
+    'monthly_revenue': 0.0,
+    'total_orders': 0,
+    'pending_orders': 0,
+  };
+});

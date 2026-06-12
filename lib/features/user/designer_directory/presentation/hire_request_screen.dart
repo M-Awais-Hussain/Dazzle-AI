@@ -8,6 +8,7 @@ import 'package:ayyy/core/widgets/dazzle_bottom_nav.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ayyy/features/designer/requests/domain/designer_request.dart';
 import 'package:ayyy/features/designer/requests/data/designer_request_repository.dart';
+import 'package:ayyy/features/designer/collaboration/application/shared_project_providers.dart';
 import 'package:ayyy/features/user/designer_directory/application/designer_directory_providers.dart';
 
 class HireRequestScreen extends ConsumerStatefulWidget {
@@ -24,6 +25,8 @@ class _HireRequestScreenState extends ConsumerState<HireRequestScreen> {
   @override
   Widget build(BuildContext context) {
     final designerDetailsState = ref.watch(publicDesignerDetailsProvider(widget.id));
+    final requestState = ref.watch(pendingHireAttachmentProvider);
+    final pendingAttachments = requestState.urls;
 
     return Scaffold(
       appBar: const DazzleAppBar(showBackButton: true),
@@ -167,6 +170,51 @@ class _HireRequestScreenState extends ConsumerState<HireRequestScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
+                
+                if (pendingAttachments.isNotEmpty) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Attached Designs',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 20, color: AppColors.textSecondary),
+                        onPressed: () {
+                          ref.read(pendingHireAttachmentProvider.notifier).clear();
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: pendingAttachments.length,
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 120,
+                          margin: const EdgeInsets.only(right: 12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
+                            image: DecorationImage(
+                              image: NetworkImage(pendingAttachments[index]),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
                 // Access Level section
                 Text(
@@ -186,7 +234,7 @@ class _HireRequestScreenState extends ConsumerState<HireRequestScreen> {
                     isSelected: _selectedAccess == 0,
                     title: 'Chat Only',
                     description: 'Direct consultation with the designer to discuss ideas and feasibility without full file sharing.',
-                    price: '\$${consultationPrice.toStringAsFixed(0)}',
+                    price: 'Rs. ${consultationPrice.toStringAsFixed(0)}',
                     priceLabel: 'ONE-\nTIME',
                   ),
                 ),
@@ -199,7 +247,7 @@ class _HireRequestScreenState extends ConsumerState<HireRequestScreen> {
                     isSelected: _selectedAccess == 1,
                     title: 'Full Access',
                     description: 'Includes source designs, 3D renderings, material lists, and unlimited direct messaging for 30 days.',
-                    price: '\$${fullAccessPrice.toStringAsFixed(0)}',
+                    price: 'Rs. ${fullAccessPrice.toStringAsFixed(0)}',
                     priceLabel: 'PER\nPROJECT',
                   ),
                 ),
@@ -255,18 +303,33 @@ class _HireRequestScreenState extends ConsumerState<HireRequestScreen> {
                             userId: currentUser.id,
                             designerId: widget.id,
                             budget: _selectedAccess == 0 
-                                ? '\$${consultationPrice.toStringAsFixed(2)}' 
-                                : '\$${fullAccessPrice.toStringAsFixed(2)}',
+                                ? 'Rs. ${consultationPrice.toStringAsFixed(2)}' 
+                                : 'Rs. ${fullAccessPrice.toStringAsFixed(2)}',
                             preferences: 'Access Level: ${_selectedAccess == 0 ? "Chat Only" : "Full Access"}',
                             roomType: 'Living Room',
-                            attachments: [],
+                            attachments: pendingAttachments,
                             accessLevel: _selectedAccess == 0 ? 'chat_only' : 'full_access',
                             status: 'pending',
                             createdAt: DateTime.now(),
                             updatedAt: DateTime.now(),
                           );
 
-                          await ref.read(designerRequestRepositoryProvider).createRequest(request);
+                          final createdRequest = await ref.read(designerRequestRepositoryProvider).createRequest(request);
+
+                          // Create collaborative shared project if canvas state is present
+                          if (requestState.productId != null && requestState.canvasState != null && pendingAttachments.isNotEmpty) {
+                            final roomImageUrl = pendingAttachments.first;
+                            await ref.read(sharedProjectControllerProvider.notifier).createProject(
+                              requestId: createdRequest.id,
+                              designerId: widget.id,
+                              productId: requestState.productId!,
+                              roomImage: roomImageUrl,
+                              currentCanvasState: requestState.canvasState!,
+                            );
+                          }
+
+                          // Clear attachment if successful
+                          ref.read(pendingHireAttachmentProvider.notifier).clear();
 
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

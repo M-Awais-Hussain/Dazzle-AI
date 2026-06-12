@@ -5,6 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:ayyy/core/theme/app_colors.dart';
 import '../domain/designer_request.dart';
 import '../application/designer_request_controller.dart';
+import 'package:ayyy/features/designer/portfolio/application/portfolio_controller.dart';
+import 'package:ayyy/features/designer/collaboration/application/designer_project_provider.dart';
+import '../../collaboration/presentation/collaborative_room_editor_widget.dart';
+import 'package:ayyy/features/designer/collaboration/application/shared_project_providers.dart';
+import 'package:ayyy/features/designer/collaboration/presentation/shared_canvas_editor_screen.dart';
 
 class DesignerRequestDetailScreen extends ConsumerStatefulWidget {
   final DesignerRequest request;
@@ -34,6 +39,24 @@ class _DesignerRequestDetailScreenState extends ConsumerState<DesignerRequestDet
 
   Future<void> _updateStatus(String status) async {
     setState(() => _isLoading = true);
+    
+    if (status == 'completed') {
+      final projectNotifier = ref.read(designerProjectProvider(widget.request.id));
+      final project = projectNotifier.project;
+      if (project != null && project.finalImageUrl != null) {
+        await projectNotifier.completeProject(project.finalImageUrl!);
+        await ref.read(designerProjectsProvider.notifier).addProjectWithUrl(
+          title: 'Collaborative Design for ${widget.request.roomType}',
+          description: 'A custom collaborative design delivered securely.',
+          imageUrls: [project.finalImageUrl!, project.roomImageUrl],
+          styleTags: ['Minimal', 'Modern', 'Luxe'],
+          pricing: 199.00,
+          projectType: widget.request.roomType,
+          completionTime: 'Just now',
+        );
+      }
+    }
+
     final success = await ref
         .read(designerRequestsProvider.notifier)
         .updateRequestStatus(widget.request.id, status);
@@ -156,7 +179,7 @@ class _DesignerRequestDetailScreenState extends ConsumerState<DesignerRequestDet
                   ),
                   const SizedBox(height: 12),
                   _DetailRow(label: 'Room Type', value: req.roomType),
-                  _DetailRow(label: 'Service Mode', value: req.accessLevel == 'chat_only' ? 'Chat Consultation Only (\$49)' : 'Full Space Design Assistant (\$199)'),
+                  _DetailRow(label: 'Service Mode', value: req.accessLevel == 'chat_only' ? 'Chat Consultation Only (Rs. 49)' : 'Full Space Design Assistant (Rs. 199)'),
                   
                   // Budget & Negotiation
                   Padding(
@@ -323,6 +346,59 @@ class _DesignerRequestDetailScreenState extends ConsumerState<DesignerRequestDet
                       ],
                     ),
                   ] else if (req.status == 'accepted' || req.status == 'in_progress') ...[
+                    if (req.attachments.isNotEmpty) ...[
+                      Text(
+                        'COLLABORATIVE WORKSPACE',
+                        style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(height: 12),
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final sharedProjectAsync = ref.watch(sharedProjectByRequestIdProvider(req.id));
+                          
+                          return sharedProjectAsync.when(
+                            data: (project) {
+                              if (project == null) {
+                                return SizedBox(
+                                  height: 400,
+                                  width: double.infinity,
+                                  child: CollaborativeRoomEditorWidget(
+                                    requestId: req.id,
+                                    designerId: req.designerId,
+                                    userId: req.userId,
+                                    roomImageUrl: req.attachments.first,
+                                  ),
+                                );
+                              }
+                              
+                              return SizedBox(
+                                width: double.infinity,
+                                height: 54,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.push(context, MaterialPageRoute(
+                                      builder: (context) => SharedCanvasEditorScreen(projectId: project.id),
+                                    ));
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  icon: const Icon(Icons.brush, color: AppColors.textPrimary),
+                                  label: Text(
+                                    'OPEN COLLABORATIVE CANVAS',
+                                    style: GoogleFonts.inter(fontWeight: FontWeight.w900, color: AppColors.textPrimary, fontSize: 13),
+                                  ),
+                                ),
+                              );
+                            },
+                            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                            error: (e, _) => Text('Error loading shared project: $e', style: const TextStyle(color: Colors.red)),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                     Column(
                       children: [
                         SizedBox(

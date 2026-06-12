@@ -278,7 +278,7 @@ class _ProjectCard extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '\$${project.pricing.toStringAsFixed(0)}',
+                      'Rs. ${project.pricing.toStringAsFixed(0)}',
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,

@@ -50,7 +50,7 @@ class _UserChatListScreenState extends ConsumerState<UserChatListScreen> {
       appBar: const DazzleAppBar(
         showProfileIcon: true,
       ),
-      bottomNavigationBar: const DazzleBottomNav(currentIndex: 2),
+      bottomNavigationBar: const DazzleBottomNav(currentIndex: 3),
       body: SafeArea(
         child: Column(
           children: [

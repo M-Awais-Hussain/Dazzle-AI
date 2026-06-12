@@ -217,7 +217,7 @@ class _DesignerPackagesScreenState extends ConsumerState<DesignerPackagesScreen>
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Package Price (\$)',
+                                    'Package Price (Rs.)',
                                     style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                                   ),
                                   const SizedBox(height: 8),
@@ -301,7 +301,7 @@ class _DesignerPackagesScreenState extends ConsumerState<DesignerPackagesScreen>
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Set up custom consultation tiers like Basic Consultation (\$49) or Premium Makeover (\$299) to simplify booking.',
+                                  'Set up custom consultation tiers like Basic Consultation (Rs. 49) or Premium Makeover (Rs. 299) to simplify booking.',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary, height: 1.5),
                                 ),
@@ -348,7 +348,7 @@ class _DesignerPackagesScreenState extends ConsumerState<DesignerPackagesScreen>
                                       ),
                                     ),
                                     Text(
-                                      '\$${pkg.price.toStringAsFixed(0)}',
+                                      'Rs. ${pkg.price.toStringAsFixed(0)}',
                                       style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.primaryDark),
                                     ),
                                   ],

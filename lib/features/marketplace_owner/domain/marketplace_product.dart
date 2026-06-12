@@ -25,6 +25,9 @@ abstract class MarketplaceProduct with _$MarketplaceProduct {
     @JsonKey(name: 'thumbnail_url') String? thumbnailUrl,
     @JsonKey(name: 'image_urls') @Default([]) List<String> imageUrls,
     @JsonKey(name: 'is_featured') @Default(false) bool isFeatured,
+    @JsonKey(name: 'purchase_link') @Default('') String purchaseLink,
+    @JsonKey(name: 'coupon_code') String? couponCode,
+    @JsonKey(name: 'coupon_description') String? couponDescription,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _MarketplaceProduct;

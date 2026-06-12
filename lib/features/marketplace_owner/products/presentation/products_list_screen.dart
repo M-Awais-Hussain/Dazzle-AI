@@ -223,7 +223,7 @@ class _ProductListTile extends StatelessWidget {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text('\$${product.price.toStringAsFixed(0)}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      Text('Rs. ${product.price.toStringAsFixed(0)}', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary)),
                       const SizedBox(width: 12),
                       StockIndicator(stock: product.stock),
                     ],

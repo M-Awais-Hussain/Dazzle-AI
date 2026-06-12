@@ -68,6 +68,49 @@ class DesignerProjectsController extends AsyncNotifier<List<PortfolioProject>> {
     }
   }
 
+  Future<bool> addProjectWithUrl({
+    required String title,
+    required String description,
+    required List<String> imageUrls,
+    required List<String> styleTags,
+    required double pricing,
+    required String projectType,
+    required String completionTime,
+  }) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return false;
+
+    state = const AsyncLoading();
+    try {
+      final List<String> finalImageUrls = [...imageUrls];
+      if (finalImageUrls.isEmpty) {
+        finalImageUrls.add('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&auto=format&fit=crop');
+      }
+
+      final project = PortfolioProject(
+        id: '',
+        designerId: user.id,
+        title: title,
+        description: description,
+        images: finalImageUrls,
+        styleTags: styleTags,
+        pricing: pricing,
+        projectType: projectType,
+        completionTime: completionTime,
+        createdAt: DateTime.now(),
+      );
+
+      await _repository.addProject(project);
+      
+      final refreshed = await _repository.getProjects(user.id);
+      state = AsyncData(refreshed);
+      return true;
+    } catch (e, st) {
+      state = AsyncError(e, st);
+      return false;
+    }
+  }
+
   Future<bool> updateProject({
     required String projectId,
     required String title,

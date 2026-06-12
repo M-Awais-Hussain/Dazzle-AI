@@ -214,7 +214,7 @@ class NotificationsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    notification.body,
+                    _cleanBody(notification.body),
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       color: notification.isRead ? AppColors.textSecondary : AppColors.textPrimary,
@@ -242,6 +242,18 @@ class NotificationsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  String _cleanBody(String rawBody) {
+    if (rawBody.startsWith('[ATTACHMENT]|||')) {
+      final parts = rawBody.split('|||');
+      if (parts.length >= 4) {
+        final textContent = parts.sublist(3).join('|||');
+        final attachmentName = parts[2].isEmpty ? 'Attachment' : parts[2];
+        return textContent.isNotEmpty ? '📎 $textContent' : '📎 $attachmentName';
+      }
+    }
+    return rawBody;
   }
 
   Widget _buildLeadingWidget(AppNotification notification) {

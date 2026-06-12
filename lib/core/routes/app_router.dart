@@ -8,8 +8,8 @@ import 'package:ayyy/features/auth/presentation/login_screen.dart';
 import 'package:ayyy/features/user/home/presentation/home_dashboard_screen.dart';
 import 'package:ayyy/features/user/marketplace/presentation/marketplace_home_screen.dart';
 import 'package:ayyy/features/user/marketplace/presentation/product_details_screen.dart';
-import 'package:ayyy/features/user/marketplace/presentation/shopping_cart_screen.dart';
 import 'package:ayyy/features/user/marketplace/presentation/ai_room_result_screen.dart';
+import 'package:ayyy/features/user/marketplace/presentation/ai_room_canvas_editor_screen.dart';
 import 'package:ayyy/features/user/designer_directory/presentation/designer_directory_screen.dart';
 import 'package:ayyy/features/user/chat/presentation/public_designer_profile_screen.dart';
 import 'package:ayyy/features/user/designer_directory/presentation/hire_request_screen.dart';
@@ -18,12 +18,11 @@ import 'package:ayyy/features/user/chat/presentation/designer_collaboration_scre
 import 'package:ayyy/features/user/chat/presentation/rate_experience_screen.dart';
 import 'package:ayyy/features/user/chat/presentation/review_submitted_screen.dart';
 import 'package:ayyy/features/user/profile/presentation/settings_screen.dart';
-import 'package:ayyy/features/user/orders/presentation/checkout_screen.dart';
-import 'package:ayyy/features/user/orders/presentation/order_success_screen.dart';
 import 'package:ayyy/features/marketplace_owner/presentation/marketplace_shell_screen.dart';
 import 'package:ayyy/features/marketplace_owner/products/presentation/add_edit_product_screen.dart';
+import 'package:ayyy/features/marketplace_owner/products/presentation/manage_variants_screen.dart';
 import 'package:ayyy/features/user/chat/presentation/user_chat_list_screen.dart';
-import 'package:ayyy/features/user/orders/presentation/user_request_management_screen.dart';
+import 'package:ayyy/features/user/requests/presentation/user_request_management_screen.dart';
 import 'package:ayyy/features/notifications/presentation/notifications_screen.dart';
 import 'package:ayyy/features/user/marketplace/presentation/ai_creations_screen.dart';
 import 'package:ayyy/features/user/marketplace/presentation/ai_creation_detail_screen.dart';
@@ -178,14 +177,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const MarketplaceHomeScreen(),
       ),
       GoRoute(
-        path: '/marketplace/cart',
-        builder: (context, state) => const ShoppingCartScreen(),
-      ),
-      GoRoute(
         path: '/marketplace/product/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
           return ProductDetailsScreen(id: id);
+        },
+      ),
+      GoRoute(
+        path: '/marketplace/product/:id/canvas-editor',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return AiRoomCanvasEditorScreen(productId: id);
         },
       ),
       GoRoute(
@@ -240,23 +242,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
-        path: '/marketplace/checkout',
-        builder: (context, state) => const CheckoutScreen(),
-      ),
-      GoRoute(
-        path: '/marketplace/order-success',
-        builder: (context, state) {
-          final orderId = state.uri.queryParameters['orderId'] ?? 'N/A';
-          return OrderSuccessScreen(orderId: orderId);
-        },
-      ),
-      GoRoute(
         path: '/marketplace/dashboard',
         builder: (context, state) => const MarketplaceShellScreen(),
       ),
       GoRoute(
         path: '/marketplace/products/add',
         builder: (context, state) => const AddEditProductScreen(),
+      ),
+      GoRoute(
+        path: '/marketplace/products/:id/variants',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return ManageVariantsScreen(productId: id);
+        },
       ),
       GoRoute(
         path: '/chats',
@@ -274,11 +272,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/orders-requests',
+        path: '/requests',
         builder: (context, state) {
-          final tabStr = state.uri.queryParameters['tab'];
-          final initialTab = tabStr == 'orders' ? 1 : 0;
-          return UserRequestManagementScreen(initialTab: initialTab);
+          return const UserRequestManagementScreen();
         },
       ),
       GoRoute(

@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/features/marketplace_owner/application/marketplace_analytics_controller.dart';
-import 'package:ayyy/features/marketplace_owner/application/marketplace_order_controller.dart';
 import 'package:ayyy/features/marketplace_owner/domain/analytics_metric.dart';
 import 'package:ayyy/features/marketplace_owner/presentation/widgets/analytics_card.dart';
 import 'package:ayyy/features/marketplace_owner/presentation/widgets/common_widgets.dart';
@@ -77,7 +76,7 @@ class AnalyticsScreen extends ConsumerWidget {
               children: [
                 Expanded(child: AnalyticsCard(
                   title: 'Total Revenue',
-                  value: '\$${((stats['total_revenue'] as num?) ?? 0).toStringAsFixed(0)}',
+                  value: 'Rs. ${((stats['total_revenue'] as num?) ?? 0).toStringAsFixed(0)}',
                   icon: Icons.account_balance_wallet_outlined,
                   iconColor: AppColors.success,
                   subtitle: growthText,
@@ -85,7 +84,7 @@ class AnalyticsScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Expanded(child: AnalyticsCard(
                   title: 'Monthly Revenue',
-                  value: '\$${((stats['monthly_revenue'] as num?) ?? 0).toStringAsFixed(0)}',
+                  value: 'Rs. ${((stats['monthly_revenue'] as num?) ?? 0).toStringAsFixed(0)}',
                   icon: Icons.trending_up,
                   iconColor: Colors.blue,
                 )),
@@ -144,7 +143,7 @@ class AnalyticsScreen extends ConsumerWidget {
                 leftTitles: AxisTitles(sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 44,
-                  getTitlesWidget: (val, _) => Text('\$${val.toInt()}', style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
+                  getTitlesWidget: (val, _) => Text('Rs. ${val.toInt()}', style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary)),
                 )),
                 bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -218,7 +217,7 @@ class AnalyticsScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Text('\$${(p['total_revenue'] as num).toStringAsFixed(0)}', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  Text('Rs. ${(p['total_revenue'] as num).toStringAsFixed(0)}', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
                 ],
               ),
             );

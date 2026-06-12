@@ -8,6 +8,12 @@ class AiRoomGeneration {
   final String generatedImage;
   final String? productDescription;
   final DateTime createdAt;
+  final double? positionX;
+  final double? positionY;
+  final double? scale;
+  final double? rotation;
+  final double? canvasWidth;
+  final double? canvasHeight;
 
   const AiRoomGeneration({
     required this.id,
@@ -19,6 +25,12 @@ class AiRoomGeneration {
     required this.generatedImage,
     this.productDescription,
     required this.createdAt,
+    this.positionX,
+    this.positionY,
+    this.scale,
+    this.rotation,
+    this.canvasWidth,
+    this.canvasHeight,
   });
 
   factory AiRoomGeneration.fromJson(Map<String, dynamic> json) {
@@ -32,6 +44,12 @@ class AiRoomGeneration {
       generatedImage: json['generated_image'] as String,
       productDescription: json['product_description'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
+      positionX: (json['position_x'] as num?)?.toDouble(),
+      positionY: (json['position_y'] as num?)?.toDouble(),
+      scale: (json['scale'] as num?)?.toDouble(),
+      rotation: (json['rotation'] as num?)?.toDouble(),
+      canvasWidth: (json['canvas_width'] as num?)?.toDouble(),
+      canvasHeight: (json['canvas_height'] as num?)?.toDouble(),
     );
   }
 
@@ -44,6 +62,12 @@ class AiRoomGeneration {
       'room_image': roomImage,
       'generated_image': generatedImage,
       'product_description': productDescription,
+      if (positionX != null) 'position_x': positionX,
+      if (positionY != null) 'position_y': positionY,
+      if (scale != null) 'scale': scale,
+      if (rotation != null) 'rotation': rotation,
+      if (canvasWidth != null) 'canvas_width': canvasWidth,
+      if (canvasHeight != null) 'canvas_height': canvasHeight,
     };
   }
 }

@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
 import 'package:ayyy/features/user/marketplace/application/ai_room_controller.dart';
+import 'package:ayyy/features/user/designer_directory/application/designer_directory_providers.dart';
 
 class AiRoomResultScreen extends ConsumerStatefulWidget {
   final String productId;
@@ -274,7 +275,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                         child: aiState.generatedImageBytes != null
                             ? Image.memory(
                                 aiState.generatedImageBytes!,
-                                fit: BoxFit.cover,
+                                fit: BoxFit.contain,
                                 errorBuilder: (_, e, st) => _imagePlaceholder(),
                               )
                             : _imagePlaceholder(),
@@ -388,7 +389,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '\$${aiState.product!.price.toStringAsFixed(2)}',
+                                  'Rs. ${aiState.product!.price.toStringAsFixed(2)}',
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -437,6 +438,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                             ref
                                 .read(aiRoomControllerProvider.notifier)
                                 .regenerate();
+                            context.pushReplacement('/marketplace/product/${widget.productId}/canvas-editor');
                           },
                           icon: const Icon(Icons.refresh, size: 16),
                           label: FittedBox(
@@ -542,6 +544,38 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                     ),
                   ),
                 ),
+                const SizedBox(height: 10),
+
+                // ── Share with Designer CTA ──
+                if (aiState.generatedImageUrl != null || aiState.isSaved)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        if (aiState.generatedImageUrl != null) {
+                          ref.read(pendingHireAttachmentProvider.notifier).setMultiple([aiState.generatedImageUrl!]);
+                          context.push('/designers');
+                        }
+                      },
+                      icon: const Icon(Icons.people_outline, size: 16),
+                      label: Text(
+                        'HIRE DESIGNER',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textPrimary,
+                        side: BorderSide(color: AppColors.textSecondary.withValues(alpha: 0.3)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

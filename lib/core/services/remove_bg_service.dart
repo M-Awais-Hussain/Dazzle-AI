@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -73,18 +75,45 @@ class RemoveBgService {
           'Remove.bg returned status ${response.statusCode}',
         );
       } on DioException catch (e) {
+        debugPrint('[RemoveBg] DioException on attempt ${attempt + 1}: ${e.message}');
+        if (e.response != null) {
+          debugPrint('[RemoveBg] Response status: ${e.response?.statusCode}');
+          try {
+            if (e.response!.data is List<int>) {
+              final errorMsg = utf8.decode(e.response!.data as List<int>);
+              debugPrint('[RemoveBg] Response body: $errorMsg');
+            } else {
+              debugPrint('[RemoveBg] Response body: ${e.response!.data}');
+            }
+          } catch (decodeError) {
+            debugPrint('[RemoveBg] Could not decode response body: $decodeError');
+          }
+        }
+
         if (CancelToken.isCancel(e)) rethrow;
 
-        attempt++;
-        if (attempt >= _maxRetries) {
+        // If it's a non-retryable error, fail immediately without wasting retries/credits
+        if (!_isRetryable(e)) {
           final statusCode = e.response?.statusCode;
           String message = 'Background removal failed';
           if (statusCode == 402) {
             message = 'Remove.bg API credits exhausted';
-          } else if (statusCode == 429) {
-            message = 'Too many requests — please wait and try again';
+          } else if (statusCode == 403) {
+            message = 'Invalid Remove.bg API key or unauthorized access';
+          } else {
+            message = _parseErrorMessage(e, message);
           }
-          throw ServerException(message, code: statusCode?.toString());
+          final errCode = _parseErrorCode(e) ?? statusCode?.toString();
+          throw ServerException(message, code: errCode);
+        }
+
+        attempt++;
+        if (attempt >= _maxRetries) {
+          final statusCode = e.response?.statusCode;
+          String message = 'Background removal failed after $_maxRetries attempts';
+          message = _parseErrorMessage(e, message);
+          final errCode = _parseErrorCode(e) ?? statusCode?.toString();
+          throw ServerException(message, code: errCode);
         }
         await Future.delayed(Duration(seconds: 2 * attempt));
       }
@@ -93,6 +122,115 @@ class RemoveBgService {
     throw ServerException(
       'Background removal failed after $_maxRetries attempts',
     );
+  }
+
+  /// Fast path: Download an already-processed transparent image from a URL (e.g. Supabase Storage)
+  /// and cache it under the [originalImageUrl] key so it behaves like the API.
+  Future<Uint8List> getOrDownloadTransparent(
+    String originalImageUrl,
+    String transparentUrl, {
+    CancelToken? cancelToken,
+  }) async {
+    if (_cache.containsKey(originalImageUrl)) {
+      return _cache[originalImageUrl]!;
+    }
+    
+    try {
+      debugPrint('[RemoveBg] Fast path download for: $originalImageUrl');
+      final response = await _dio.get(
+        transparentUrl,
+        options: Options(responseType: ResponseType.bytes),
+        cancelToken: cancelToken,
+      );
+      
+      if (response.statusCode == 200 && response.data != null) {
+        final bytes = Uint8List.fromList(response.data as List<int>);
+        _cache[originalImageUrl] = bytes;
+        return bytes;
+      }
+      throw ServerException('Failed to download transparent image');
+    } catch (e) {
+      debugPrint('[RemoveBg] Failed fast path download: $e');
+      rethrow;
+    }
+  }
+
+  /// Pre-fetches a list of transparent images in the background to ensure instantaneous switching.
+  Future<void> preFetchTransparentImages(Map<String, String> variantsMap) async {
+    final futures = <Future>[];
+    for (final entry in variantsMap.entries) {
+      final originalUrl = entry.key;
+      final transparentUrl = entry.value;
+      
+      if (!_cache.containsKey(originalUrl) && transparentUrl.isNotEmpty) {
+        futures.add(getOrDownloadTransparent(originalUrl, transparentUrl).catchError((_) => Uint8List(0)));
+      }
+    }
+    
+    if (futures.isNotEmpty) {
+      debugPrint('[RemoveBg] Pre-fetching ${futures.length} transparent images...');
+      await Future.wait(futures);
+    }
+  }
+
+  bool _isRetryable(DioException e) {
+    final response = e.response;
+    if (response == null) return true;
+    final statusCode = response.statusCode;
+    if (statusCode == null) return true;
+    return statusCode == 408 || statusCode == 429 || statusCode >= 500;
+  }
+
+  String _parseErrorMessage(DioException e, String defaultMessage) {
+    if (e.response != null && e.response!.data != null) {
+      try {
+        final data = e.response!.data;
+        final String jsonStr;
+        if (data is List<int>) {
+          jsonStr = utf8.decode(data);
+        } else if (data is String) {
+          jsonStr = data;
+        } else {
+          jsonStr = jsonEncode(data);
+        }
+        
+        final decoded = jsonDecode(jsonStr);
+        if (decoded is Map && decoded['errors'] is List && (decoded['errors'] as List).isNotEmpty) {
+          final errorObj = decoded['errors'][0];
+          if (errorObj is Map) {
+            return errorObj['detail'] ?? errorObj['title'] ?? defaultMessage;
+          }
+        }
+      } catch (decodeError) {
+        debugPrint('[RemoveBg] Error parsing error response: $decodeError');
+      }
+    }
+    return defaultMessage;
+  }
+
+  String? _parseErrorCode(DioException e) {
+    if (e.response != null && e.response!.data != null) {
+      try {
+        final data = e.response!.data;
+        final String jsonStr;
+        if (data is List<int>) {
+          jsonStr = utf8.decode(data);
+        } else if (data is String) {
+          jsonStr = data;
+        } else {
+          jsonStr = jsonEncode(data);
+        }
+        
+        final decoded = jsonDecode(jsonStr);
+        if (decoded is Map && decoded['errors'] is List && (decoded['errors'] as List).isNotEmpty) {
+          final errorObj = decoded['errors'][0];
+          if (errorObj is Map) {
+            return errorObj['code']?.toString();
+          }
+        }
+      } catch (_) {}
+    }
+    return null;
   }
 
   void clearCache() => _cache.clear();

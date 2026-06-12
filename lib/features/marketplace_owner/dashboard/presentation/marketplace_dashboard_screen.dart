@@ -5,9 +5,7 @@ import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
 import 'package:ayyy/features/marketplace_owner/application/marketplace_profile_controller.dart';
 import 'package:ayyy/features/marketplace_owner/application/marketplace_product_controller.dart';
-import 'package:ayyy/features/marketplace_owner/application/marketplace_order_controller.dart';
 import 'package:ayyy/features/marketplace_owner/presentation/widgets/analytics_card.dart';
-import 'package:ayyy/features/marketplace_owner/presentation/widgets/order_tile.dart';
 import 'package:ayyy/features/marketplace_owner/presentation/widgets/common_widgets.dart';
 
 class MarketplaceDashboardScreen extends ConsumerWidget {
@@ -17,8 +15,6 @@ class MarketplaceDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(marketplaceProfileControllerProvider);
     final productsAsync = ref.watch(marketplaceProductControllerProvider);
-    final ordersAsync = ref.watch(marketplaceOrderControllerProvider);
-    final statsAsync = ref.watch(orderStatsProvider);
 
     final storeName = profileAsync.when(
       data: (p) => p?.storeName ?? 'Your Store',
@@ -33,8 +29,6 @@ class MarketplaceDashboardScreen extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(marketplaceProfileControllerProvider);
           ref.invalidate(marketplaceProductControllerProvider);
-          ref.invalidate(marketplaceOrderControllerProvider);
-          ref.invalidate(orderStatsProvider);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -56,15 +50,7 @@ class MarketplaceDashboardScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               // Stats Cards
-              _buildStatsSection(statsAsync, productsAsync),
-              const SizedBox(height: 28),
-
-
-
-              // Recent Orders
-              _sectionHeader('Recent Orders'),
-              const SizedBox(height: 12),
-              _buildRecentOrders(ordersAsync, ref),
+              _buildStatsSection(productsAsync),
               const SizedBox(height: 28),
 
               // Top Products
@@ -87,60 +73,24 @@ class MarketplaceDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildStatsSection(
-    AsyncValue<Map<String, dynamic>> statsAsync,
     AsyncValue productsAsync,
   ) {
-    return statsAsync.when(
-      data: (stats) {
-        final totalProducts = productsAsync.when(
-          data: (products) => (products as List).length,
-          loading: () => 0,
-          error: (e, s) => 0,
-        );
-        return SizedBox(
-          height: 120,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              CompactStatCard(title: 'Products', value: '$totalProducts', icon: Icons.inventory_2_outlined, color: AppColors.primary),
-              const SizedBox(width: 12),
-              CompactStatCard(title: 'Total Orders', value: '${stats['total_orders'] ?? 0}', icon: Icons.receipt_long_outlined, color: Colors.blue),
-              const SizedBox(width: 12),
-              CompactStatCard(title: 'Revenue', value: '\$${((stats['total_revenue'] as num?) ?? 0).toStringAsFixed(0)}', icon: Icons.trending_up, color: AppColors.success),
-              const SizedBox(width: 12),
-              CompactStatCard(title: 'Pending', value: '${stats['pending_orders'] ?? 0}', icon: Icons.pending_actions_outlined, color: Colors.orange),
-              const SizedBox(width: 12),
-            ],
-          ),
-        );
-      },
-      loading: () => const SizedBox(height: 120, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-      error: (e, s) => const SizedBox(height: 120, child: Center(child: Text('Unable to load stats'))),
+    final totalProducts = productsAsync.when(
+      data: (products) => (products as List).length,
+      loading: () => 0,
+      error: (e, s) => 0,
     );
-  }
-
-  Widget _buildRecentOrders(AsyncValue<List> ordersAsync, WidgetRef ref) {
-    return ordersAsync.when(
-      data: (orders) {
-        if (orders.isEmpty) {
-          return const MarketplaceEmptyState(
-            icon: Icons.receipt_long_outlined,
-            title: 'No Orders Yet',
-            subtitle: 'When customers place orders, they\'ll appear here.',
-          );
-        }
-        final recent = orders.take(5).toList();
-        return Column(
-          children: recent.map((order) => OrderTile(
-            order: order,
-            onStatusChanged: (status) {
-              ref.read(marketplaceOrderControllerProvider.notifier).updateStatus(order.id, status);
-            },
-          )).toList(),
-        );
-      },
-      loading: () => const MarketplaceLoadingState(),
-      error: (e, _) => Center(child: Text('Error: $e')),
+    return SizedBox(
+      height: 120,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          CompactStatCard(title: 'Products', value: '$totalProducts', icon: Icons.inventory_2_outlined, color: AppColors.primary),
+          const SizedBox(width: 12),
+          CompactStatCard(title: 'Store Visits', value: '0', icon: Icons.people_outline, color: Colors.blue),
+          const SizedBox(width: 12),
+        ],
+      ),
     );
   }
 

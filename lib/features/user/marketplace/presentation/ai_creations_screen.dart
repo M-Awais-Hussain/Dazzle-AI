@@ -704,18 +704,15 @@ class _CreationCard extends ConsumerWidget {
       if (context.mounted) {
         Navigator.pop(context); // pop loading
 
-        // 2. Prepopulate state in aiRoomControllerProvider
-        ref.read(aiRoomControllerProvider.notifier).reset();
+        // 2. Prepare state in aiRoomControllerProvider
+        ref.read(aiRoomControllerProvider.notifier).prepareCanvas(
+          product: product,
+          selectedImageUrl: creation.selectedProductImageUrl,
+          roomImagePath: creation.roomImageUrl,
+        );
 
-        // 3. Navigate directly to result screen which automatically takes product and regenerates
-        context.push('/marketplace/product/${product.id}/ai-room');
-
-        // 4. In background, start pipeline (room is represented by net url or wait, the composer uses files.
-        // Wait, if composer uses a roomImagePath file, we download it first or load it.
-        // Since we are compositing, wait, does the controller take roomImagePath?
-        // Yes, startGeneration takes roomImagePath. But wait, how do we get a file path from original_room_image url?
-        // We can download the roomImageUrl to a temp file and trigger the composition!
-        // Let's implement downloading the room photo in the controller or before triggering!)
+        // 3. Navigate directly to canvas editor to reposition
+        context.push('/marketplace/product/${product.id}/canvas-editor');
       }
     } catch (e) {
       if (context.mounted) {

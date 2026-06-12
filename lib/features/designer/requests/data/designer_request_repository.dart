@@ -7,7 +7,8 @@ abstract class DesignerRequestRepository {
   Future<List<DesignerRequest>> getRequestsForDesigner(String designerId);
   Future<List<DesignerRequest>> getRequestsForUser(String userId);
   Future<DesignerRequest?> getRequestById(String requestId);
-  Future<void> createRequest(DesignerRequest request);
+  Future<DesignerRequest?> getRequestByIdForUser(String requestId);
+  Future<DesignerRequest> createRequest(DesignerRequest request);
   Future<void> updateRequestStatus(String requestId, String status);
   Future<void> updateRequestBudget(String requestId, String newBudget);
 }
@@ -23,6 +24,22 @@ class SupabaseDesignerRequestRepository implements DesignerRequestRepository {
       final response = await _supabase
           .from('designer_requests')
           .select('*, profiles:profiles!user_id(full_name, avatar_url)')
+          .eq('id', requestId)
+          .maybeSingle();
+
+      if (response == null) return null;
+      return DesignerRequest.fromJson(response);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<DesignerRequest?> getRequestByIdForUser(String requestId) async {
+    try {
+      final response = await _supabase
+          .from('designer_requests')
+          .select('*, profiles:profiles!designer_id(full_name, avatar_url)')
           .eq('id', requestId)
           .maybeSingle();
 
@@ -69,9 +86,9 @@ class SupabaseDesignerRequestRepository implements DesignerRequestRepository {
   }
 
   @override
-  Future<void> createRequest(DesignerRequest request) async {
+  Future<DesignerRequest> createRequest(DesignerRequest request) async {
     try {
-      await _supabase.from('designer_requests').insert({
+      final response = await _supabase.from('designer_requests').insert({
         'user_id': request.userId,
         'designer_id': request.designerId,
         'budget': request.budget,
@@ -80,7 +97,8 @@ class SupabaseDesignerRequestRepository implements DesignerRequestRepository {
         'attachments': request.attachments,
         'access_level': request.accessLevel,
         'status': request.status,
-      });
+      }).select().single();
+      return DesignerRequest.fromJson(response);
     } catch (e) {
       throw ServerException(e.toString());
     }

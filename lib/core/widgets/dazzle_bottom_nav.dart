@@ -83,9 +83,9 @@ class DazzleBottomNav extends ConsumerWidget {
                   },
                 ),
                 _NavItem(
-                  icon: Icons.receipt_long_outlined,
-                  activeIcon: Icons.receipt_long,
-                  label: 'ORDERS',
+                  icon: Icons.analytics_outlined,
+                  activeIcon: Icons.analytics,
+                  label: 'ANALYTICS',
                   isActive: currentIndex == 2,
                   onTap: () {
                     ref.read(marketplaceTabIndexProvider.notifier).setTab(2);
@@ -93,22 +93,12 @@ class DazzleBottomNav extends ConsumerWidget {
                   },
                 ),
                 _NavItem(
-                  icon: Icons.analytics_outlined,
-                  activeIcon: Icons.analytics,
-                  label: 'ANALYTICS',
-                  isActive: currentIndex == 3,
-                  onTap: () {
-                    ref.read(marketplaceTabIndexProvider.notifier).setTab(3);
-                    context.go('/marketplace/dashboard');
-                  },
-                ),
-                _NavItem(
                   icon: Icons.storefront_outlined,
                   activeIcon: Icons.storefront,
                   label: 'PROFILE',
-                  isActive: currentIndex == 4,
+                  isActive: currentIndex == 3,
                   onTap: () {
-                    ref.read(marketplaceTabIndexProvider.notifier).setTab(4);
+                    ref.read(marketplaceTabIndexProvider.notifier).setTab(3);
                     context.go('/marketplace/dashboard');
                   },
                 ),
@@ -248,9 +238,9 @@ class DazzleBottomNav extends ConsumerWidget {
               _NavItem(
                 icon: Icons.receipt_long_outlined,
                 activeIcon: Icons.receipt_long,
-                label: 'ORDERS',
+                label: 'REQUESTS',
                 isActive: currentIndex == 4,
-                onTap: () => context.go('/orders-requests'),
+                onTap: () => context.go('/requests'),
               ),
             ],
           ),

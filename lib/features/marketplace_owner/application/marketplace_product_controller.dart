@@ -48,6 +48,9 @@ class MarketplaceProductController extends AsyncNotifier<List<MarketplaceProduct
     String? material,
     List<String>? colors,
     bool isFeatured = false,
+    String? purchaseLink,
+    String? couponCode,
+    String? couponDescription,
     List<XFile>? imageFiles,
   }) async {
     try {
@@ -81,6 +84,9 @@ class MarketplaceProductController extends AsyncNotifier<List<MarketplaceProduct
         'image_urls': imageUrls,
         'thumbnail_url': thumbnailUrl,
         'is_featured': isFeatured,
+        'purchase_link': purchaseLink ?? '',
+        'coupon_code': couponCode,
+        'coupon_description': couponDescription,
         if (categoryId != null) 'category_id': categoryId,
       };
 
@@ -106,6 +112,9 @@ class MarketplaceProductController extends AsyncNotifier<List<MarketplaceProduct
     String? material,
     List<String>? colors,
     bool? isFeatured,
+    String? purchaseLink,
+    String? couponCode,
+    String? couponDescription,
     List<String>? imageUrls,
     String? thumbnailUrl,
   }) async {
@@ -120,6 +129,9 @@ class MarketplaceProductController extends AsyncNotifier<List<MarketplaceProduct
         if (material != null) 'material': material,
         if (colors != null) 'colors': colors,
         if (isFeatured != null) 'is_featured': isFeatured,
+        if (purchaseLink != null) 'purchase_link': purchaseLink,
+        if (couponCode != null) 'coupon_code': couponCode,
+        if (couponDescription != null) 'coupon_description': couponDescription,
         if (imageUrls != null) 'image_urls': imageUrls,
         if (thumbnailUrl != null) 'thumbnail_url': thumbnailUrl,
       };

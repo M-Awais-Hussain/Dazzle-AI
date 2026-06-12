@@ -134,7 +134,7 @@ class _DesignerProfileScreenState extends ConsumerState<DesignerProfileScreen> {
                       Expanded(
                         child: _EarningsCard(
                           label: 'MONTHLY REVENUE',
-                          value: '\$${stats.monthlyRevenue.toStringAsFixed(0)}',
+                          value: 'Rs. ${stats.monthlyRevenue.toStringAsFixed(0)}',
                           bg: AppColors.surface,
                         ),
                       ),
@@ -142,7 +142,7 @@ class _DesignerProfileScreenState extends ConsumerState<DesignerProfileScreen> {
                       Expanded(
                         child: _EarningsCard(
                           label: 'TOTAL INCOME',
-                          value: '\$${stats.totalEarnings.toStringAsFixed(0)}',
+                          value: 'Rs. ${stats.totalEarnings.toStringAsFixed(0)}',
                           bg: AppColors.primary,
                         ),
                       ),
@@ -224,7 +224,7 @@ class _DesignerProfileScreenState extends ConsumerState<DesignerProfileScreen> {
                                   const SizedBox(height: 16),
                                   _RowInfo(label: 'Experience:', value: '${profile.experienceYears} Years'),
                                   _RowInfo(label: 'Response Time:', value: profile.responseTime),
-                                  _RowInfo(label: 'Consultation Fee:', value: '\$${profile.consultationPrice.toStringAsFixed(0)}'),
+                                  _RowInfo(label: 'Consultation Fee:', value: 'Rs. ${profile.consultationPrice.toStringAsFixed(0)}'),
                                 ],
                               ),
                             ),
@@ -292,7 +292,7 @@ class _DesignerProfileScreenState extends ConsumerState<DesignerProfileScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Consult Fee (\$)',
+                                      'Consult Fee (Rs.)',
                                       style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
                                     ),
                                     const SizedBox(height: 8),
@@ -429,7 +429,7 @@ class _DesignerProfileScreenState extends ConsumerState<DesignerProfileScreen> {
                                   ],
                                 ),
                                 Text(
-                                  '+\$${e.amount.toStringAsFixed(0)}',
+                                  '+Rs. ${e.amount.toStringAsFixed(0)}',
                                   style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.success),
                                 ),
                               ],
@@ -440,6 +440,65 @@ class _DesignerProfileScreenState extends ConsumerState<DesignerProfileScreen> {
                     },
                     loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
                     error: (err, st) => const SizedBox(),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // Client Reviews Section
+                  Text(
+                    'CLIENT REVIEWS & RATINGS',
+                    style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '4.9',
+                              style: GoogleFonts.inter(fontSize: 32, fontWeight: FontWeight.w900, color: AppColors.textPrimary),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: List.generate(5, (index) => const Icon(Icons.star, color: Colors.amber, size: 16)),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Based on 24 completed projects',
+                                  style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        const Divider(color: AppColors.border, height: 1),
+                        const SizedBox(height: 16),
+                        _ReviewItem(
+                          clientName: 'Sarah M.',
+                          rating: 5,
+                          comment: 'Incredible attention to detail. The collaborative canvas made the process so easy!',
+                          date: '2 days ago',
+                        ),
+                        const SizedBox(height: 12),
+                        _ReviewItem(
+                          clientName: 'James L.',
+                          rating: 5,
+                          comment: 'The AI enhanced preview really helped me visualize the final room.',
+                          date: '1 week ago',
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 48),
 
@@ -544,6 +603,51 @@ class _RowInfo extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ReviewItem extends StatelessWidget {
+  final String clientName;
+  final int rating;
+  final String comment;
+  final String date;
+
+  const _ReviewItem({
+    required this.clientName,
+    required this.rating,
+    required this.comment,
+    required this.date,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              clientName,
+              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            Row(
+              children: List.generate(rating, (index) => const Icon(Icons.star, color: Colors.amber, size: 12)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          comment,
+          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          date,
+          style: GoogleFonts.inter(fontSize: 10, color: AppColors.textSecondary),
+        ),
+      ],
     );
   }
 }

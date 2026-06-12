@@ -1,47 +1,80 @@
-# ayyy - AI Furniture & Room Designer Marketplace
+# Dazzle-AI - AI Furniture & Room Designer Collaboration Platform
 
-A modern, comprehensive Flutter application that acts as a marketplace connecting Users, Interior Designers, and Marketplace Owners. The platform empowers users to redesign their spaces using advanced AI, consult with professional designers, and purchase furniture directly.
+Dazzle-AI is a modern, comprehensive Flutter application that acts as a collaborative spatial design platform connecting **Users**, **Interior Designers**, and **Marketplace Owners**. 
+
+Instead of a traditional shopping cart experience, Dazzle-AI focuses on interactive, real-time spatial design. It empowers users to visualize furniture in their own rooms using an advanced 2.5D perspective canvas, configure dynamic product variants, hire professional designers, and collaborate with them live on a synchronized canvas.
+
+---
 
 ## Project Overview
 
-This project is a full-featured marketplace that redefines how users shop for and visualize furniture in their own environments. It seamlessly blends e-commerce, real-time communication, and state-of-the-art AI.
+Dazzle-AI redefines how spaces are visualized, designed, and customized. It bridges the gap between client imagination and professional design expertise through real-time communication, custom spatial canvas controls, and smart image processing.
 
 ### Key Roles
-- **Users**: Can upload room photos, use AI to visualize new furniture layouts, chat with designers for advice, and place orders.
-- **Designers**: Can manage their portfolio, receive and respond to design requests, chat with clients in real-time, and track their earnings via custom dashboards.
-- **Marketplace Owners**: Can oversee the platform, manage inventory, and handle order fulfillment.
+- **Users**: Can upload room photos, utilize the interactive 2.5D canvas to place and adjust furniture, swap product colors or layout configurations, hire professional designers, and participate in live real-time design collaborations.
+- **Designers**: Can manage their design portfolios, accept hire requests, collaborate with clients on a live canvas in real-time, generate final composite designs, and automatically showcase completed projects.
+- **Marketplace Owners**: Can oversee the furniture catalog, configure rich product variants (colors, layouts, and corresponding assets), and analyze platform engagement via custom analytics dashboards.
+
+---
+
+## Key Features
+
+### 1. Interactive 2.5D Perspective Canvas
+Dazzle-AI features a sophisticated custom-drawn canvas (`PerspectiveProductCanvas`) to position transparent cutouts of furniture inside room photos:
+- **Spatial Positioning & Transforms**: Supports multi-touch translation, scaling, and rotation.
+- **2.5D Perspective Tilts**: Allows adjustment of X-axis and Y-axis tilt angles via a Matrix4 transform with perspective distortion (`setEntry(3, 2, 0.001)`).
+- **Depth-Based Scaling**: Automatically adjusts the scale of the furniture based on its vertical position (`dy`) on the canvas—simulating realistic depth and distance as objects move higher (farther) or lower (closer).
+- **Interactive Snapping**: Offers optional snapping to the horizontal/vertical center guidelines and snaps rotation to 45-degree increments.
+- **Floor Shadow Simulation**: Renders adjustable floor shadows (`CanvasShadowPainter`) that dynamically follow the furniture's translation, rotation, scale, and tilts.
+
+### 2. Live Real-Time Collaboration
+Designers and clients can work together on the exact same project canvas in real-time:
+- **Low-Latency Sync**: Canvas transformations (coordinates, rotation, scale, tilts, and variant selections) are broadcasted between the user and designer via **Supabase Broadcast Channels (WebSockets)**, throttled to 15 FPS (66ms) for smooth synchronization without lag.
+- **Persistent Synchronization**: Changes are periodically saved to the database using a 500ms debounced database write stream, minimizing server load while ensuring persistence.
+- **Final Composition & Delivery**: Once the layout is finalized, the designer composites the elements, uploads the final high-resolution render to Supabase Storage, delivers it in chat, and can automatically list it in their portfolio.
+
+### 3. Dynamic Product Variants
+Products are not static images. They support multiple configurable dimensions, materials, and colors:
+- **Color Variants**: Configured with hexadecimal codes and names. Swapping colors updates the active canvas asset in real-time.
+- **Layout Variants**: Configured for different orientations (e.g., horizontal vs. vertical layouts).
+- **Background Removal Integration**: Swapping variants retrieves pre-processed transparent images or automatically removes the background of the raw asset on-the-fly using the Remove.bg API, uploading the result for future users.
+
+---
 
 ## Technologies & Libraries Used
 
-The application is built on a modern and robust tech stack:
+The application is built on a modern and robust Flutter stack:
 
 - **Frontend Framework**: [Flutter](https://flutter.dev/) (SDK ^3.11.5) for cross-platform UI.
 - **State Management**: [Riverpod](https://riverpod.dev/) (`flutter_riverpod`) for scalable and reactive state.
-- **Routing**: [GoRouter](https://pub.dev/packages/go_router) for declarative routing and deep linking.
-- **Backend & Database**: [Supabase](https://supabase.com/) (`supabase_flutter`) for authentication, real-time database syncing, and cloud storage.
+- **Routing**: [GoRouter](https://pub.dev/packages/go_router) for declarative routing, access guards, and role-based redirect logic.
+- **Backend & Database**: [Supabase](https://supabase.com/) (`supabase_flutter`) for authentication, database access, real-time database streams, websocket broadcasting, and storage.
 - **Networking**: [Dio](https://pub.dev/packages/dio) with `pretty_dio_logger` for structured HTTP requests to external APIs.
 - **Data Models**: [Freezed](https://pub.dev/packages/freezed) & `json_serializable` for immutable state and safe JSON serialization.
 - **Local Storage**: `flutter_secure_storage` and `shared_preferences` for securely persisting local data and sessions.
 - **UI & Visualization**: `fl_chart` for rendering earnings and analytics dashboards.
+- **Utilities**: `image` for programmatic image manipulation and compositing, and `url_launcher` for external links.
+
+---
 
 ## How the AI & API Integrations Work
 
-The core magic of the application is handled through coordinated API services that automate the background removal and spatial analysis:
+The core magic of the application is handled through coordinated API services:
 
 1. **Image Selection & Background Removal (Remove.bg API)**
-   - When a user wants to test a product in their room, the product image is sent to the **Remove.bg API** via our network layer.
-   - The API processes the image, strips away the original background, and returns a clean, transparent PNG of the furniture item.
-   - The application caches these transparent images to optimize performance and reduce API calls.
+   - When a product or variant is loaded into the canvas, the raw image is processed via the **Remove.bg API** to isolate the furniture item.
+   - The application uploads and caches these transparent cutout images to Supabase Storage to optimize load times and minimize API usage.
 
 2. **AI Spatial & Layout Analysis (Google Gemini API)**
-   - The transparent furniture image and the user's room photo are packaged alongside contextual metadata (such as product dimensions and room type).
-   - This data is securely sent to the **Google Gemini 2.5 Flash API**.
-   - Gemini acts as an AI interior designer: it analyzes the geometry, lighting, and perspective of the room to determine the most natural and aesthetically pleasing location for the furniture.
-   - The AI returns precise normalized coordinates (bounding boxes).
+   - To offer an automated alternative, the transparent furniture cutout and the user's room photo are packaged alongside metadata (such as product dimensions and room type).
+   - This data is sent to the **Google Gemini 2.5 Flash API**.
+   - Gemini acts as an AI interior designer, evaluating the geometry, lighting, and perspective of the room to return precise normalized coordinates (bounding boxes) for the best placement.
 
-3. **Rendering & Compositing**
-   - The Flutter frontend receives the coordinates and utilizes the native `dart:ui` Canvas.
-   - It composites the transparent furniture image perfectly over the original room photo, creating a realistic and immediate preview for the user.
+3. **Rendering, Compositing & Live Synchronisation**
+   - The Flutter frontend composites the assets perfectly on the 2.5D canvas using a custom Matrix4 transform matrix.
+   - During collaboration sessions, updates to these transforms are broadcasted across WebSockets in real-time, allowing both users to see movement, tilts, and variant updates instantly.
+
+---
 
 ## How to Run This Project
 

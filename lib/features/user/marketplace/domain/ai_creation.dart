@@ -11,6 +11,12 @@ class AiCreation {
   final String generationPrompt;
   final DateTime createdAt;
   final String generationVersion;
+  final double? positionX;
+  final double? positionY;
+  final double? scale;
+  final double? rotation;
+  final double? canvasWidth;
+  final double? canvasHeight;
 
   const AiCreation({
     required this.id,
@@ -25,6 +31,12 @@ class AiCreation {
     required this.generationPrompt,
     required this.createdAt,
     required this.generationVersion,
+    this.positionX,
+    this.positionY,
+    this.scale,
+    this.rotation,
+    this.canvasWidth,
+    this.canvasHeight,
   });
 
   factory AiCreation.fromJson(Map<String, dynamic> json) {
@@ -41,6 +53,12 @@ class AiCreation {
       generationPrompt: json['generation_prompt'] as String? ?? '',
       createdAt: DateTime.parse(json['created_at'] as String),
       generationVersion: json['generation_version'] as String? ?? 'v1',
+      positionX: (json['position_x'] as num?)?.toDouble(),
+      positionY: (json['position_y'] as num?)?.toDouble(),
+      scale: (json['scale'] as num?)?.toDouble(),
+      rotation: (json['rotation'] as num?)?.toDouble(),
+      canvasWidth: (json['canvas_width'] as num?)?.toDouble(),
+      canvasHeight: (json['canvas_height'] as num?)?.toDouble(),
     );
   }
 
@@ -56,6 +74,12 @@ class AiCreation {
       'product_description': productDescription,
       'generation_prompt': generationPrompt,
       'generation_version': generationVersion,
+      if (positionX != null) 'position_x': positionX,
+      if (positionY != null) 'position_y': positionY,
+      if (scale != null) 'scale': scale,
+      if (rotation != null) 'rotation': rotation,
+      if (canvasWidth != null) 'canvas_width': canvasWidth,
+      if (canvasHeight != null) 'canvas_height': canvasHeight,
     };
   }
 }

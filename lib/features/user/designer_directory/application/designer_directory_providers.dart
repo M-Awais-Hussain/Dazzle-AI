@@ -2,6 +2,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ayyy/features/designer/profile/data/designer_profile_repository.dart';
 
+class PendingHireRequestState {
+  final List<String> urls;
+  final String? productId;
+  final Map<String, dynamic>? canvasState;
+
+  const PendingHireRequestState({
+    this.urls = const [],
+    this.productId,
+    this.canvasState,
+  });
+}
+
+class PendingHireAttachmentNotifier extends Notifier<PendingHireRequestState> {
+  @override
+  PendingHireRequestState build() => const PendingHireRequestState();
+
+  void setMultiple(List<String> urls, {String? productId, Map<String, dynamic>? canvasState}) {
+    state = PendingHireRequestState(
+      urls: urls,
+      productId: productId,
+      canvasState: canvasState,
+    );
+  }
+
+  void clear() {
+    state = const PendingHireRequestState();
+  }
+}
+
+final pendingHireAttachmentProvider = NotifierProvider<PendingHireAttachmentNotifier, PendingHireRequestState>(
+  PendingHireAttachmentNotifier.new,
+);
+
 final publicDesignersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) {
   final repository = ref.watch(designerProfileRepositoryProvider);
   return repository.getPublicDesignerCards();

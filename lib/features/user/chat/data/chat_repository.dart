@@ -6,7 +6,7 @@ import 'package:ayyy/core/errors/exceptions.dart';
 
 abstract class ChatRepository {
   Stream<List<ChatMessage>> watchMessages(String chatRoomId);
-  Future<void> sendMessage(String chatRoomId, String content, String senderId);
+  Future<void> sendMessage(String chatRoomId, String content, String senderId, {bool isAttachment = false, String? attachmentUrl, String? attachmentName});
   Future<String> createOrGetChatRoom({
     required String userId,
     String? designerId,
@@ -29,9 +29,11 @@ class SupabaseChatRepository implements ChatRepository {
           .select()
           .eq('chat_room_id', chatRoomId)
           .order('created_at', ascending: true);
-      yield (initialData as List)
-          .map((json) => ChatMessage.fromJson(json as Map<String, dynamic>))
-          .toList();
+      yield (initialData as List).map((json) {
+        final map = Map<String, dynamic>.from(json as Map);
+        _decodeAttachment(map);
+        return ChatMessage.fromJson(map);
+      }).toList();
     } catch (_) {}
 
     yield* Stream.periodic(const Duration(seconds: 2)).asyncMap((_) async {
@@ -40,22 +42,47 @@ class SupabaseChatRepository implements ChatRepository {
           .select()
           .eq('chat_room_id', chatRoomId)
           .order('created_at', ascending: true);
-      return (data as List)
-          .map((json) => ChatMessage.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return (data as List).map((json) {
+        final map = Map<String, dynamic>.from(json as Map);
+        _decodeAttachment(map);
+        return ChatMessage.fromJson(map);
+      }).toList();
     });
   }
 
   @override
-  Future<void> sendMessage(String chatRoomId, String content, String senderId) async {
+  Future<void> sendMessage(String chatRoomId, String content, String senderId, {bool isAttachment = false, String? attachmentUrl, String? attachmentName}) async {
     try {
-      await _supabase.from('messages').insert({
+      String finalContent = content;
+      if (isAttachment) {
+        // Serialize attachment data into the content string to avoid DB schema issues
+        finalContent = '[ATTACHMENT]|||${attachmentUrl ?? ''}|||${attachmentName ?? ''}|||$content';
+      }
+
+      final insertData = <String, dynamic>{
         'chat_room_id': chatRoomId,
         'sender_id': senderId,
-        'content': content,
-      });
+        'content': finalContent,
+      };
+      
+      await _supabase.from('messages').insert(insertData);
     } catch (e) {
       throw ServerException('Failed to send message: $e');
+    }
+  }
+
+  void _decodeAttachment(Map<String, dynamic> map) {
+    final content = map['content'] as String? ?? '';
+    if (content.startsWith('[ATTACHMENT]|||')) {
+      final parts = content.split('|||');
+      if (parts.length >= 4) {
+        map['isAttachment'] = true;
+        map['attachmentUrl'] = parts[1].isEmpty ? null : parts[1];
+        map['attachmentName'] = parts[2].isEmpty ? null : parts[2];
+        map['content'] = parts.sublist(3).join('|||'); // Rejoin in case content had |||
+      }
+    } else {
+      map['isAttachment'] = false;
     }
   }
 
@@ -198,7 +225,18 @@ class SupabaseChatRepository implements ChatRepository {
             return aTime.compareTo(bTime);
           });
           final latest = messages.last;
-          lastMessage = latest['content'] as String? ?? '';
+          String rawContent = latest['content'] as String? ?? '';
+          
+          if (rawContent.startsWith('[ATTACHMENT]|||')) {
+            final parts = rawContent.split('|||');
+            if (parts.length >= 4) {
+              final textContent = parts.sublist(3).join('|||');
+              final attachmentName = parts[2].isEmpty ? 'Attachment' : parts[2];
+              rawContent = textContent.isNotEmpty ? '📎 $textContent' : '📎 $attachmentName';
+            }
+          }
+          
+          lastMessage = rawContent;
           lastMessageTime = DateTime.parse(latest['created_at'] as String);
         }
 
