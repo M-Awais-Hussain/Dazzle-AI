@@ -24,7 +24,6 @@ Dazzle-AI features a sophisticated custom-drawn canvas (`PerspectiveProductCanva
 - **Spatial Positioning & Transforms**: Supports multi-touch translation, scaling, and rotation.
 - **2.5D Perspective Tilts**: Allows adjustment of X-axis and Y-axis tilt angles via a Matrix4 transform with perspective distortion (`setEntry(3, 2, 0.001)`).
 - **Depth-Based Scaling**: Automatically adjusts the scale of the furniture based on its vertical position (`dy`) on the canvas—simulating realistic depth and distance as objects move higher (farther) or lower (closer).
-- **Interactive Snapping**: Offers optional snapping to the horizontal/vertical center guidelines and snaps rotation to 45-degree increments.
 - **Floor Shadow Simulation**: Renders adjustable floor shadows (`CanvasShadowPainter`) that dynamically follow the furniture's translation, rotation, scale, and tilts.
 
 ### 2. Live Real-Time Collaboration
