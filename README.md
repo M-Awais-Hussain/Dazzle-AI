@@ -1,4 +1,4 @@
-# Dazzle - Furniture & Room Designer Collaboration Platform
+# Dazzle - Smart Furniture & Room Designer Collaboration Platform
 
 Dazzle is a modern, comprehensive Flutter application that acts as a collaborative spatial design platform connecting **Users**, **Interior Designers**, and **Marketplace Owners**. 
 

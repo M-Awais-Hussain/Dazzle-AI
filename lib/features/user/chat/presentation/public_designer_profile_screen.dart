@@ -7,7 +7,7 @@ import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
 import 'package:ayyy/core/widgets/dazzle_bottom_nav.dart';
 import 'package:ayyy/features/user/designer_directory/application/designer_directory_providers.dart';
 import 'package:ayyy/features/common/review/application/review_controller.dart';
-
+import 'package:ayyy/features/designer/portfolio/domain/portfolio_project.dart';
 class PublicDesignerProfileScreen extends ConsumerWidget {
   final String id;
   const PublicDesignerProfileScreen({super.key, required this.id});
@@ -193,29 +193,126 @@ class PublicDesignerProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 48),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Icon(Icons.collections_outlined, size: 36, color: AppColors.textSecondary.withValues(alpha: 0.5)),
-                              const SizedBox(height: 12),
-                              Text(
-                                'Aesthetic concepts showcase coming soon',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final portfolioState = ref.watch(publicDesignerPortfolioProvider(id));
+                          return portfolioState.when(
+                            data: (projects) {
+                              if (projects.isEmpty) {
+                                return Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 48),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: AppColors.border),
+                                  ),
+                                  child: Center(
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.collections_outlined, size: 36, color: AppColors.textSecondary.withValues(alpha: 0.5)),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          'No portfolio projects yet',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 13,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return SizedBox(
+                                height: 260,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: projects.length,
+                                  itemBuilder: (context, index) {
+                                    final project = projects[index];
+                                    final imageUrl = project.images.isNotEmpty ? project.images.first : '';
+
+                                    return GestureDetector(
+                                      onTap: () {
+                                        // Open sliding window full screen
+                                        _showPortfolioFullScreen(context, project);
+                                      },
+                                      child: Container(
+                                        width: 200,
+                                        margin: const EdgeInsets.only(right: 16),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.surface,
+                                          borderRadius: BorderRadius.circular(16),
+                                          border: Border.all(color: AppColors.border),
+                                        ),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: imageUrl.isNotEmpty
+                                                  ? Image.network(
+                                                      imageUrl,
+                                                      width: double.infinity,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: AppColors.textSecondary)),
+                                                    )
+                                                  : Container(
+                                                      width: double.infinity,
+                                                      color: const Color(0xFFF5F3EE),
+                                                      child: const Icon(Icons.image, color: AppColors.textSecondary),
+                                                    ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.all(12.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    project.title,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 14,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: AppColors.textPrimary,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    project.projectType,
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 12,
+                                                      color: AppColors.textSecondary,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
+                              );
+                            },
+                            loading: () => const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32.0),
+                                child: CircularProgressIndicator(),
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                            error: (e, _) => Center(
+                              child: Text(
+                                'Error loading portfolio',
+                                style: GoogleFonts.inter(color: Colors.redAccent, fontSize: 13),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -518,4 +615,117 @@ class _ProfileStat extends StatelessWidget {
       ],
     );
   }
+}
+
+void _showPortfolioFullScreen(BuildContext context, PortfolioProject project) {
+  showDialog(
+    context: context,
+    barrierColor: AppColors.surface, // Full screen background
+    builder: (BuildContext context) {
+      return Scaffold(
+        backgroundColor: AppColors.surface,
+        appBar: const DazzleAppBar(
+          title: 'Project Portfolio',
+          showBackButton: true,
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image slider
+              if (project.images.isNotEmpty)
+                SizedBox(
+                  height: 350,
+                  child: PageView.builder(
+                    itemCount: project.images.length,
+                    itemBuilder: (context, index) {
+                      return Image.network(
+                        project.images[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, size: 48, color: AppColors.textSecondary)),
+                      );
+                    },
+                  ),
+                )
+              else
+                Container(
+                  height: 350,
+                  color: const Color(0xFFF5F3EE),
+                  child: const Center(child: Icon(Icons.image, size: 48, color: AppColors.textSecondary)),
+                ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      project.title,
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${project.projectType} • ${project.completionTime}',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      project.description,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    if (project.styleTags.isNotEmpty) ...[
+                      Text(
+                        'Style & Aesthetics',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: project.styleTags.map((tag) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F3EE),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              tag,
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

@@ -96,7 +96,7 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
                     const SizedBox(height: 24),
                     _RoleCard(
                       title: 'Continue as Designer',
-                      description: 'Work with clients, manage projects, and use advanced AI rendering to bring professional visions to life.',
+                      description: 'Work with clients, manage projects, and use advanced rendering to bring professional visions to life.',
                       isSelected: selectedRole == 'designer',
                       onTap: () => _selectRole('designer'),
                       icon: Icons.brush_outlined,

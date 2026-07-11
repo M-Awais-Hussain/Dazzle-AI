@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ayyy/features/designer/profile/data/designer_profile_repository.dart';
+import 'package:ayyy/features/designer/portfolio/domain/portfolio_project.dart';
 
 class PendingHireRequestState {
   final List<String> urls;
@@ -51,4 +52,17 @@ final publicDesignerDetailsProvider = FutureProvider.family<Map<String, dynamic>
       .single();
       
   return Map<String, dynamic>.from(response);
+});
+
+final publicDesignerPortfolioProvider = FutureProvider.family<List<PortfolioProject>, String>((ref, id) async {
+  final supabase = Supabase.instance.client;
+  final response = await supabase
+      .from('designer_portfolios')
+      .select()
+      .eq('designer_id', id)
+      .order('created_at', ascending: false);
+      
+  return (response as List<dynamic>)
+      .map((e) => PortfolioProject.fromJson(e as Map<String, dynamic>))
+      .toList();
 });

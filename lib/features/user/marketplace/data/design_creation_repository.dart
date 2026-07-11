@@ -18,7 +18,7 @@ class DesignCreationRepository {
     try {
       await _supabase.from(_table).insert(creation.toInsertJson());
     } catch (e) {
-      throw ServerException('Failed to save AI creation: $e');
+      throw ServerException('Failed to save design creation: $e');
     }
   }
 
@@ -50,7 +50,7 @@ class DesignCreationRepository {
           .map((json) => DesignCreation.fromJson(Map<String, dynamic>.from(json as Map)))
           .toList();
     } catch (e) {
-      throw ServerException('Failed to fetch AI creations: $e');
+      throw ServerException('Failed to fetch design creations: $e');
     }
   }
 
@@ -59,7 +59,7 @@ class DesignCreationRepository {
       final response = await _supabase.from(_table).select().eq('id', id).single();
       return DesignCreation.fromJson(Map<String, dynamic>.from(response));
     } catch (e) {
-      throw ServerException('Failed to fetch AI creation details: $e');
+      throw ServerException('Failed to fetch design creation details: $e');
     }
   }
 
@@ -89,7 +89,7 @@ class DesignCreationRepository {
         }
       }
     } catch (e) {
-      throw ServerException('Failed to delete AI creation: $e');
+      throw ServerException('Failed to delete design creation: $e');
     }
   }
 }
