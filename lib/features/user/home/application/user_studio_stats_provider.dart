@@ -42,14 +42,14 @@ class UserStudioStats {
 }
 
 Future<UserStudioStats> _fetchStats(SupabaseClient supabase, String userId) async {
-  // Fetch AI Generations count
+  // Fetch Design Generations count
   final aiResponse = await supabase
       .from('ai_generations')
       .select('id')
       .eq('user_id', userId);
   final aiCount = (aiResponse as List).length;
 
-  // Fetch AI Room Generations count
+  // Fetch Room Generations count
   int aiRoomCount = 0;
   try {
     final aiRoomResponse = await supabase
@@ -62,7 +62,7 @@ Future<UserStudioStats> _fetchStats(SupabaseClient supabase, String userId) asyn
     aiRoomCount = 0;
   }
 
-  // Fetch AI Creations count
+  // Fetch Design Creations count
   int aiCreationCount = 0;
   try {
     final aiCreationResponse = await supabase

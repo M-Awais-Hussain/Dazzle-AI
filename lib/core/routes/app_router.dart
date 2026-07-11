@@ -8,8 +8,8 @@ import 'package:ayyy/features/auth/presentation/login_screen.dart';
 import 'package:ayyy/features/user/home/presentation/home_dashboard_screen.dart';
 import 'package:ayyy/features/user/marketplace/presentation/marketplace_home_screen.dart';
 import 'package:ayyy/features/user/marketplace/presentation/product_details_screen.dart';
-import 'package:ayyy/features/user/marketplace/presentation/ai_room_result_screen.dart';
-import 'package:ayyy/features/user/marketplace/presentation/ai_room_canvas_editor_screen.dart';
+import 'package:ayyy/features/user/marketplace/presentation/room_design_result_screen.dart';
+import 'package:ayyy/features/user/marketplace/presentation/room_design_canvas_editor_screen.dart';
 import 'package:ayyy/features/user/designer_directory/presentation/designer_directory_screen.dart';
 import 'package:ayyy/features/user/chat/presentation/public_designer_profile_screen.dart';
 import 'package:ayyy/features/user/designer_directory/presentation/hire_request_screen.dart';
@@ -24,8 +24,8 @@ import 'package:ayyy/features/marketplace_owner/products/presentation/manage_var
 import 'package:ayyy/features/user/chat/presentation/user_chat_list_screen.dart';
 import 'package:ayyy/features/user/requests/presentation/user_request_management_screen.dart';
 import 'package:ayyy/features/notifications/presentation/notifications_screen.dart';
-import 'package:ayyy/features/user/marketplace/presentation/ai_creations_screen.dart';
-import 'package:ayyy/features/user/marketplace/presentation/ai_creation_detail_screen.dart';
+import 'package:ayyy/features/user/marketplace/presentation/design_creations_screen.dart';
+import 'package:ayyy/features/user/marketplace/presentation/design_creation_detail_screen.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -262,13 +262,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/creations',
-        builder: (context, state) => const AiCreationsScreen(),
+        builder: (context, state) => const DesignCreationsScreen(),
       ),
       GoRoute(
         path: '/creations/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
-          return AiCreationDetailScreen(creationId: id);
+          return DesignCreationDetailScreen(creationId: id);
         },
       ),
       GoRoute(

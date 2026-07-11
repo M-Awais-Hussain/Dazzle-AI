@@ -259,7 +259,7 @@ class _UserRequestManagementScreenState extends ConsumerState<UserRequestManagem
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'AI Interior Architect Partner',
+                      'Interior Architect Partner',
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: AppColors.textSecondary,

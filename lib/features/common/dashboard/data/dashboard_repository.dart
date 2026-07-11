@@ -48,7 +48,7 @@ class SupabaseDashboardRepository implements DashboardRepository {
       for (final json in listGen) {
         projects.add(Project(
           id: json['id'] as String,
-          title: json['prompt_used'] as String? ?? 'AI Generation',
+          title: json['prompt_used'] as String? ?? 'Design Generation',
           thumbnail: json['generated_image_url'] as String? ?? json['original_image_url'] as String? ?? '',
           updatedAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
         ));
@@ -57,7 +57,7 @@ class SupabaseDashboardRepository implements DashboardRepository {
       for (final json in listRoom) {
         projects.add(Project(
           id: json['id'] as String,
-          title: json['product_description'] as String? ?? 'AI Room Design',
+          title: json['product_description'] as String? ?? 'Room Design',
           thumbnail: json['generated_image'] as String? ?? json['room_image'] as String? ?? '',
           updatedAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
         ));

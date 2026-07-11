@@ -4,9 +4,5 @@ class EnvConfig {
   static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
   static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
   static String get supabaseSecretKey => dotenv.env['SUPABASE_SECRET_KEY'] ?? '';
-  static String get vertexAiEndpoint => dotenv.env['VERTEX_AI_ENDPOINT'] ?? '';
-  static String get vertexAiApiKey => dotenv.env['VERTEX_AI_API_KEY'] ?? '';
   static String get removeBgApiKey => dotenv.env['REMOVE_BG_API_KEY'] ?? '';
-  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
-  static String get huggingFaceApiKey => dotenv.env['HUGGINGFACE_API_KEY'] ?? '';
 }

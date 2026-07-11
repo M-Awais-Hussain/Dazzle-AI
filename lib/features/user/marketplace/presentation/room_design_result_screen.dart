@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_room_controller.dart';
+import 'package:ayyy/features/user/marketplace/application/room_design_controller.dart';
 import 'package:ayyy/features/user/designer_directory/application/designer_directory_providers.dart';
 
 class AiRoomResultScreen extends ConsumerStatefulWidget {
@@ -61,7 +61,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
 
   @override
   Widget build(BuildContext context) {
-    final aiState = ref.watch(aiRoomControllerProvider);
+    final aiState = ref.watch(roomDesignControllerProvider);
 
     // Trigger fade-in when generation completes
     if (aiState.isDone && _fadeController.status == AnimationStatus.dismissed) {
@@ -82,8 +82,8 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
     );
   }
 
-  Widget _buildBody(AiRoomState aiState) {
-    if (aiState.step == AiRoomStep.error) {
+  Widget _buildBody(RoomDesignState aiState) {
+    if (aiState.step == RoomDesignStep.error) {
       return _buildErrorState(aiState);
     }
 
@@ -111,7 +111,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
   // Loading State
   // ──────────────────────────────────────────
 
-  Widget _buildLoadingState(AiRoomState aiState) {
+  Widget _buildLoadingState(RoomDesignState aiState) {
     return Column(
       children: [
         Expanded(
@@ -243,7 +243,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
   // Completed State
   // ──────────────────────────────────────────
 
-  Widget _buildCompletedState(AiRoomState aiState) {
+  Widget _buildCompletedState(RoomDesignState aiState) {
     return Column(
       children: [
         Expanded(
@@ -284,7 +284,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                   ),
                   const SizedBox(height: 20),
 
-                  // ── AI badge ──
+                  // ── badge ──
                   Row(
                     children: [
                       Container(
@@ -306,7 +306,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'AI GENERATED',
+                              'GENERATED',
                               style: GoogleFonts.inter(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w800,
@@ -436,7 +436,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                         child: ElevatedButton.icon(
                           onPressed: () {
                             ref
-                                .read(aiRoomControllerProvider.notifier)
+                                .read(roomDesignControllerProvider.notifier)
                                 .regenerate();
                             context.pushReplacement('/marketplace/product/${widget.productId}/canvas-editor');
                           },
@@ -469,11 +469,11 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                         height: 48,
                         child: ElevatedButton.icon(
                           onPressed: aiState.isSaved ||
-                                  aiState.step == AiRoomStep.saving
+                                  aiState.step == RoomDesignStep.saving
                               ? null
                               : () {
                                   ref
-                                      .read(aiRoomControllerProvider.notifier)
+                                      .read(roomDesignControllerProvider.notifier)
                                       .saveToHistory();
                                 },
                           icon: Icon(
@@ -485,7 +485,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
                           label: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Text(
-                              aiState.step == AiRoomStep.saving
+                              aiState.step == RoomDesignStep.saving
                                   ? 'SAVING...'
                                   : aiState.isSaved
                                       ? 'SAVED'
@@ -588,7 +588,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
   // Error State
   // ──────────────────────────────────────────
 
-  Widget _buildErrorState(AiRoomState aiState) {
+  Widget _buildErrorState(RoomDesignState aiState) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -633,7 +633,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
               height: 48,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  ref.read(aiRoomControllerProvider.notifier).regenerate();
+                  ref.read(roomDesignControllerProvider.notifier).regenerate();
                 },
                 icon: const Icon(Icons.refresh, size: 16),
                 label: Text(
@@ -657,7 +657,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
-                ref.read(aiRoomControllerProvider.notifier).reset();
+                ref.read(roomDesignControllerProvider.notifier).reset();
                 context.pop();
               },
               child: Text(
@@ -693,12 +693,12 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
     );
   }
 
-  String _stepSubtext(AiRoomStep step) => switch (step) {
-        AiRoomStep.removingBackground =>
+  String _stepSubtext(RoomDesignStep step) => switch (step) {
+        RoomDesignStep.removingBackground =>
           'Isolating product from its background for clean placement',
-        AiRoomStep.analyzingRoom =>
-          'AI is studying your room layout, lighting, and perspective',
-        AiRoomStep.compositing =>
+        RoomDesignStep.analyzingRoom =>
+          'Studying your room layout, lighting, and perspective',
+        RoomDesignStep.compositing =>
           'Rendering the product into your room with natural proportions',
         _ => '',
       };
@@ -716,7 +716,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
           ),
         ),
         content: Text(
-          'The AI is still working. Are you sure you want to cancel?',
+          'The system is still working. Are you sure you want to cancel?',
           style: GoogleFonts.inter(
             fontSize: 13,
             color: AppColors.textSecondary,
@@ -737,7 +737,7 @@ class _AiRoomResultScreenState extends ConsumerState<AiRoomResultScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              ref.read(aiRoomControllerProvider.notifier).cancelGeneration();
+              ref.read(roomDesignControllerProvider.notifier).cancelGeneration();
               context.pop();
             },
             child: Text(

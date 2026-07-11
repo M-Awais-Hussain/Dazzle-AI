@@ -7,7 +7,7 @@ import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
 import 'package:ayyy/core/widgets/dazzle_bottom_nav.dart';
 import 'package:ayyy/features/auth/application/auth_controller.dart';
 import 'package:ayyy/features/user/home/application/user_studio_stats_provider.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_creations_provider.dart';
+import 'package:ayyy/features/user/marketplace/application/design_creations_provider.dart';
 
 class HomeDashboardScreen extends ConsumerWidget {
   const HomeDashboardScreen({super.key});
@@ -38,7 +38,7 @@ class HomeDashboardScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Your AI interior concierge is ready.\nWhat shall we transform today?',
+              'Your Interior concierge is ready.\nWhat shall we transform today?',
               style: GoogleFonts.inter(
                 fontSize: 14,
                 color: AppColors.textSecondary,
@@ -94,7 +94,7 @@ class HomeDashboardScreen extends ConsumerWidget {
                     childAspectRatio: 1.5,
                     children: [
                       _StatsCard(
-                        title: 'AI Creations',
+                        title: 'Design Creations',
                         value: stats.aiCreationsCount.toString(),
                         icon: Icons.auto_awesome_outlined,
                         iconColor: const Color(0xFF9C27B0),
@@ -149,7 +149,7 @@ class HomeDashboardScreen extends ConsumerWidget {
             _ActionCard(
               icon: Icons.storefront_outlined,
               title: 'Explore Marketplace',
-              description: 'Shop the exact pieces featured in your AI renders from our premium furniture partners.',
+              description: 'Shop the exact pieces featured in your renders from our premium furniture partners.',
               showAvatars: true,
               onTap: () => context.push('/marketplace'),
             ),

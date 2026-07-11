@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/movable_panel.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_room_controller.dart';
+import 'package:ayyy/features/user/marketplace/application/room_design_controller.dart';
 import 'package:ayyy/features/user/marketplace/application/canvas_editor_provider.dart';
 import 'package:ayyy/features/user/marketplace/application/product_variant_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -35,17 +35,17 @@ class _AiRoomCanvasEditorScreenState
 
   @override
   Widget build(BuildContext context) {
-    final roomState = ref.watch(aiRoomControllerProvider);
+    final roomState = ref.watch(roomDesignControllerProvider);
     final canvasState = ref.watch(canvasEditorProvider);
     final canvasNotifier = ref.read(canvasEditorProvider.notifier);
 
     // If still removing background or error, show loading/error
-    if (roomState.step == AiRoomStep.removingBackground ||
+    if (roomState.step == RoomDesignStep.removingBackground ||
         roomState.transparentProductBytes == null) {
       return _buildLoadingScreen(roomState.stepMessage);
     }
 
-    if (roomState.step == AiRoomStep.error) {
+    if (roomState.step == RoomDesignStep.error) {
       return _buildErrorScreen(roomState.errorMessage ?? 'An error occurred');
     }
 
@@ -107,7 +107,7 @@ class _AiRoomCanvasEditorScreenState
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.white),
                       onPressed: () {
-                        ref.read(aiRoomControllerProvider.notifier).cancelGeneration();
+                        ref.read(roomDesignControllerProvider.notifier).cancelGeneration();
                         context.pop();
                       },
                     ),
@@ -183,7 +183,7 @@ class _AiRoomCanvasEditorScreenState
                     height: 56,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        ref.read(aiRoomControllerProvider.notifier).generateFromCanvas(
+                        ref.read(roomDesignControllerProvider.notifier).generateFromCanvas(
                               dx: canvasState.dx,
                               dy: canvasState.dy,
                               scale: canvasState.scale,
@@ -197,7 +197,7 @@ class _AiRoomCanvasEditorScreenState
                       },
                       icon: const Icon(Icons.auto_awesome, color: AppColors.primaryDark),
                       label: Text(
-                        'Generate AI Preview',
+                        'Generate Preview',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -245,7 +245,7 @@ class _AiRoomCanvasEditorScreenState
     );
   }
 
-  Future<void> _hireDesigner(AiRoomState roomState) async {
+  Future<void> _hireDesigner(RoomDesignState roomState) async {
     if (roomState.roomImagePath == null || roomState.transparentProductBytes == null) return;
 
     // Show loading overlay
@@ -375,7 +375,7 @@ class _AiRoomCanvasEditorScreenState
     );
   }
 
-  Widget _buildVariantPanel(BuildContext context, WidgetRef ref, AiRoomState aiState) {
+  Widget _buildVariantPanel(BuildContext context, WidgetRef ref, RoomDesignState aiState) {
     final colorsAsync = ref.watch(productColorVariantsProvider(widget.productId));
     final layoutsAsync = ref.watch(productLayoutVariantsProvider(widget.productId));
     final imagesAsync = ref.watch(productVariantImagesProvider(widget.productId));
@@ -420,7 +420,7 @@ class _AiRoomCanvasEditorScreenState
                   return GestureDetector(
                     onTap: () {
                       if (!isSelected) {
-                        ref.read(aiRoomControllerProvider.notifier).switchVariant(
+                        ref.read(roomDesignControllerProvider.notifier).switchVariant(
                           layoutImageUrl!,
                           transparentImageUrl: transparentImageUrl,
                           imageId: imageId,
@@ -479,7 +479,7 @@ class _AiRoomCanvasEditorScreenState
                   return GestureDetector(
                     onTap: () {
                       if (!isSelected) {
-                        ref.read(aiRoomControllerProvider.notifier).switchVariant(
+                        ref.read(roomDesignControllerProvider.notifier).switchVariant(
                           colorImageUrl!, 
                           colorName: color.colorName,
                           transparentImageUrl: transparentImageUrl,

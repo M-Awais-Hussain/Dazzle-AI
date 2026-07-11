@@ -66,7 +66,7 @@ class _MarketplaceHomeScreenState extends ConsumerState<MarketplaceHomeScreen> {
                   const SizedBox(height: 4),
                   // Subtitle
                   Text(
-                    'CURATED BY AI DESIGN ENGINE',
+                    'CURATED BY DESIGN ENGINE',
                     style: GoogleFonts.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,

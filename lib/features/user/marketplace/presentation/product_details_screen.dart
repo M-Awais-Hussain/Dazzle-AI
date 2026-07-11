@@ -8,8 +8,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
 import 'package:ayyy/features/user/marketplace/application/product_controller.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_room_controller.dart';
-import 'package:ayyy/features/user/marketplace/presentation/ai_room_sheet.dart';
+import 'package:ayyy/features/user/marketplace/application/room_design_controller.dart';
+import 'package:ayyy/features/user/marketplace/presentation/room_design_sheet.dart';
 import 'package:ayyy/features/common/review/application/review_controller.dart';
 import 'package:ayyy/features/user/marketplace/application/product_variant_providers.dart';
 import 'package:ayyy/features/user/marketplace/domain/product_variant.dart';
@@ -665,8 +665,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                 );
                                 if (file == null || !mounted) return;
 
-                                // Start AI generation pipeline (Canvas Editor Flow)
-                                ref.read(aiRoomControllerProvider.notifier).prepareCanvas(
+                                // Start generation pipeline (Canvas Editor Flow)
+                                ref.read(roomDesignControllerProvider.notifier).prepareCanvas(
                                   product: product,
                                   selectedImageUrl: selectedImage,
                                   roomImagePath: file.path,

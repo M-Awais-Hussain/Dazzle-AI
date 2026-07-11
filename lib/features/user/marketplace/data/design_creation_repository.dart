@@ -1,20 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:ayyy/core/errors/exceptions.dart';
-import 'package:ayyy/features/user/marketplace/domain/ai_creation.dart';
+import 'package:ayyy/features/user/marketplace/domain/design_creation.dart';
 
-final aiCreationRepositoryProvider = Provider<AiCreationRepository>((ref) {
-  return AiCreationRepository(Supabase.instance.client);
+final designCreationRepositoryProvider = Provider<DesignCreationRepository>((ref) {
+  return DesignCreationRepository(Supabase.instance.client);
 });
 
-class AiCreationRepository {
+class DesignCreationRepository {
   final SupabaseClient _supabase;
   static const _table = 'ai_creations';
   static const _bucket = 'ai-room-generations';
 
-  AiCreationRepository(this._supabase);
+  DesignCreationRepository(this._supabase);
 
-  Future<void> saveCreation(AiCreation creation) async {
+  Future<void> saveCreation(DesignCreation creation) async {
     try {
       await _supabase.from(_table).insert(creation.toInsertJson());
     } catch (e) {
@@ -22,7 +22,7 @@ class AiCreationRepository {
     }
   }
 
-  Future<List<AiCreation>> getCreations({
+  Future<List<DesignCreation>> getCreations({
     required String userId,
     int limit = 20,
     int offset = 0,
@@ -47,17 +47,17 @@ class AiCreationRepository {
 
       final response = await query.range(offset, offset + limit - 1);
       return (response as List)
-          .map((json) => AiCreation.fromJson(Map<String, dynamic>.from(json as Map)))
+          .map((json) => DesignCreation.fromJson(Map<String, dynamic>.from(json as Map)))
           .toList();
     } catch (e) {
       throw ServerException('Failed to fetch AI creations: $e');
     }
   }
 
-  Future<AiCreation> getCreationById(String id) async {
+  Future<DesignCreation> getCreationById(String id) async {
     try {
       final response = await _supabase.from(_table).select().eq('id', id).single();
-      return AiCreation.fromJson(Map<String, dynamic>.from(response));
+      return DesignCreation.fromJson(Map<String, dynamic>.from(response));
     } catch (e) {
       throw ServerException('Failed to fetch AI creation details: $e');
     }

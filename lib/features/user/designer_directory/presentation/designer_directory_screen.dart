@@ -68,7 +68,7 @@ class _DesignerDirectoryScreenState extends ConsumerState<DesignerDirectoryScree
             ),
             const SizedBox(height: 10),
             Text(
-              'Connect with our elite circle of AI-enhanced interior architects. Each designer is verified for aesthetic excellence and technical precision.',
+              'Connect with our elite circle of enhanced interior architects. Each designer is verified for aesthetic excellence and technical precision.',
               style: GoogleFonts.inter(
                 fontSize: 13,
                 color: AppColors.textSecondary,

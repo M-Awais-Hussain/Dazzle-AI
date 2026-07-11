@@ -103,7 +103,7 @@ final activeProductImageUrlProvider = Provider.family<String?, String>((ref, pro
   );
 });
 
-// AI Canvas specific state
+// Canvas specific state
 class AiCanvasVariantNotifier extends Notifier<ProductVariant?> {
   @override
   ProductVariant? build() => null;

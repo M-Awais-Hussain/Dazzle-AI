@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/features/designer/collaboration/application/shared_project_providers.dart';
 import 'package:ayyy/features/user/marketplace/application/product_variant_providers.dart';
-import 'package:ayyy/core/services/gemini_image_service.dart';
+import 'package:ayyy/core/services/image_compositor_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:ayyy/features/designer/portfolio/application/portfolio_controller.dart';
@@ -17,7 +17,7 @@ import 'package:ayyy/core/services/remove_bg_service.dart';
 import 'package:ayyy/core/errors/exceptions.dart';
 import 'package:ayyy/features/user/chat/application/chat_provider.dart';
 import 'package:ayyy/core/widgets/movable_panel.dart';
-import 'package:ayyy/features/user/marketplace/data/ai_room_repository.dart';
+import 'package:ayyy/features/user/marketplace/data/room_design_repository.dart';
 import 'package:ayyy/features/user/marketplace/data/product_variant_repository.dart';
 
 class SharedCanvasEditorScreen extends ConsumerStatefulWidget {
@@ -108,7 +108,7 @@ class _SharedCanvasEditorScreenState extends ConsumerState<SharedCanvasEditorScr
       } else {
         transparentBytes = await removeBg.removeBackground(url);
         if (imageId != null && productId != null) {
-          final repo = ref.read(aiRoomRepositoryProvider);
+          final repo = ref.read(roomDesignRepositoryProvider);
           final newTransparentUrl = await repo.uploadTransparentImage(productId, transparentBytes);
           await ref.read(userProductVariantRepositoryProvider).updateTransparentImageUrl(imageId, newTransparentUrl);
         }
@@ -146,7 +146,7 @@ class _SharedCanvasEditorScreenState extends ConsumerState<SharedCanvasEditorScr
       final syncNotifier = ref.read(projectSyncProvider(widget.projectId));
       final trans = syncNotifier.transformation!;
 
-      final geminiService = ref.read(geminiImageServiceProvider);
+      final geminiService = ref.read(imageCompositorServiceProvider);
       
       final compositeBytes = await geminiService.compositeImagesWithTransform(
         roomImageBytes: _roomBytes!,
@@ -176,10 +176,10 @@ class _SharedCanvasEditorScreenState extends ConsumerState<SharedCanvasEditorScr
       
       // Integrate into Portfolio
       await ref.read(designerProjectsProvider.notifier).addProjectWithUrl(
-        title: 'Collaborative AI Design',
+        title: 'Collaborative Design',
         description: 'A custom collaborative design session delivered securely.',
         imageUrls: [finalUrl, project.roomImage],
-        styleTags: ['AI Assisted', 'Modern', 'Collaborative'],
+        styleTags: ['Assisted', 'Modern', 'Collaborative'],
         pricing: 199.00,
         projectType: 'Shared Canvas',
         completionTime: 'Just now',

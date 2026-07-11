@@ -33,7 +33,7 @@ class AiRoomSheet extends StatelessWidget {
               ),
             ),
 
-            // ── AI icon badge ──
+            // ── icon badge ──
             Container(
               width: 56,
               height: 56,

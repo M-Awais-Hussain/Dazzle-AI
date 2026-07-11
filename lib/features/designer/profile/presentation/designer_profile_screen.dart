@@ -494,7 +494,7 @@ class _DesignerProfileScreenState extends ConsumerState<DesignerProfileScreen> {
                         _ReviewItem(
                           clientName: 'James L.',
                           rating: 5,
-                          comment: 'The AI enhanced preview really helped me visualize the final room.',
+                          comment: 'The enhanced preview really helped me visualize the final room.',
                           date: '1 week ago',
                         ),
                       ],

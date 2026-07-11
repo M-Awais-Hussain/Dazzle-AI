@@ -2,56 +2,56 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ayyy/features/user/marketplace/data/ai_creation_repository.dart';
-import 'package:ayyy/features/user/marketplace/domain/ai_creation.dart';
+import 'package:ayyy/features/user/marketplace/data/design_creation_repository.dart';
+import 'package:ayyy/features/user/marketplace/domain/design_creation.dart';
 
 // --- Filter State Model ---
-class AiCreationsFilter {
+class DesignCreationsFilter {
   final String searchQuery;
   final String sortBy; // 'newest' | 'oldest' | 'product'
 
-  const AiCreationsFilter({
+  const DesignCreationsFilter({
     this.searchQuery = '',
     this.sortBy = 'newest',
   });
 
-  AiCreationsFilter copyWith({
+  DesignCreationsFilter copyWith({
     String? searchQuery,
     String? sortBy,
   }) {
-    return AiCreationsFilter(
+    return DesignCreationsFilter(
       searchQuery: searchQuery ?? this.searchQuery,
       sortBy: sortBy ?? this.sortBy,
     );
   }
 }
 
-class AiCreationsFilterNotifier extends Notifier<AiCreationsFilter> {
+class DesignCreationsFilterNotifier extends Notifier<DesignCreationsFilter> {
   @override
-  AiCreationsFilter build() {
-    return const AiCreationsFilter();
+  DesignCreationsFilter build() {
+    return const DesignCreationsFilter();
   }
 
-  void update(AiCreationsFilter Function(AiCreationsFilter state) cb) {
+  void update(DesignCreationsFilter Function(DesignCreationsFilter state) cb) {
     state = cb(state);
   }
 }
 
 final aiCreationsFilterProvider =
-    NotifierProvider<AiCreationsFilterNotifier, AiCreationsFilter>(() {
-  return AiCreationsFilterNotifier();
+    NotifierProvider<DesignCreationsFilterNotifier, DesignCreationsFilter>(() {
+  return DesignCreationsFilterNotifier();
 });
 
 // --- Gallery Notifier State Model ---
-class AiCreationsState {
-  final List<AiCreation> creations;
+class DesignCreationsState {
+  final List<DesignCreation> creations;
   final bool isLoading;
   final bool isFetchingMore;
   final bool hasMore;
   final String? errorMessage;
   final int offset;
 
-  const AiCreationsState({
+  const DesignCreationsState({
     this.creations = const [],
     this.isLoading = false,
     this.isFetchingMore = false,
@@ -60,15 +60,15 @@ class AiCreationsState {
     this.offset = 0,
   });
 
-  AiCreationsState copyWith({
-    List<AiCreation>? creations,
+  DesignCreationsState copyWith({
+    List<DesignCreation>? creations,
     bool? isLoading,
     bool? isFetchingMore,
     bool? hasMore,
     String? errorMessage,
     int? offset,
   }) {
-    return AiCreationsState(
+    return DesignCreationsState(
       creations: creations ?? this.creations,
       isLoading: isLoading ?? this.isLoading,
       isFetchingMore: isFetchingMore ?? this.isFetchingMore,
@@ -80,18 +80,18 @@ class AiCreationsState {
 }
 
 // --- Main Creations Gallery Provider ---
-class AiCreationsNotifier extends AsyncNotifier<AiCreationsState> {
+class DesignCreationsNotifier extends AsyncNotifier<DesignCreationsState> {
   static const _limit = 10;
 
   @override
-  Future<AiCreationsState> build() async {
+  Future<DesignCreationsState> build() async {
     final filter = ref.watch(aiCreationsFilterProvider);
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) {
-      return const AiCreationsState();
+      return const DesignCreationsState();
     }
 
-    final repo = ref.read(aiCreationRepositoryProvider);
+    final repo = ref.read(designCreationRepositoryProvider);
     final list = await repo.getCreations(
       userId: userId,
       limit: _limit,
@@ -100,7 +100,7 @@ class AiCreationsNotifier extends AsyncNotifier<AiCreationsState> {
       sortBy: filter.sortBy,
     );
 
-    return AiCreationsState(
+    return DesignCreationsState(
       creations: list,
       offset: list.length,
       hasMore: list.length >= _limit,
@@ -123,7 +123,7 @@ class AiCreationsNotifier extends AsyncNotifier<AiCreationsState> {
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) return;
 
-      final repo = ref.read(aiCreationRepositoryProvider);
+      final repo = ref.read(designCreationRepositoryProvider);
       final nextList = await repo.getCreations(
         userId: userId,
         limit: _limit,
@@ -160,11 +160,11 @@ class AiCreationsNotifier extends AsyncNotifier<AiCreationsState> {
   }
 
   /// In-memory insert to restore creation (Undo Support)
-  void insertCreationIntoState(int originalIndex, AiCreation creation) {
+  void insertCreationIntoState(int originalIndex, DesignCreation creation) {
     final currentState = state.value;
     if (currentState == null) return;
 
-    final updatedList = List<AiCreation>.from(currentState.creations);
+    final updatedList = List<DesignCreation>.from(currentState.creations);
     if (originalIndex >= 0 && originalIndex <= updatedList.length) {
       updatedList.insert(originalIndex, creation);
     } else {
@@ -185,24 +185,24 @@ class AiCreationsNotifier extends AsyncNotifier<AiCreationsState> {
   }
 }
 
-final aiCreationsProvider =
-    AsyncNotifierProvider<AiCreationsNotifier, AiCreationsState>(() {
-  return AiCreationsNotifier();
+final designCreationsProvider =
+    AsyncNotifierProvider<DesignCreationsNotifier, DesignCreationsState>(() {
+  return DesignCreationsNotifier();
 });
 
 // --- Detail Provider ---
 final aiCreationDetailProvider =
-    FutureProvider.family<AiCreation, String>((ref, id) {
-  final repo = ref.read(aiCreationRepositoryProvider);
+    FutureProvider.family<DesignCreation, String>((ref, id) {
+  final repo = ref.read(designCreationRepositoryProvider);
   return repo.getCreationById(id);
 });
 
 // --- Dashboard Feed Provider ---
-final recentCreationsProvider = FutureProvider<List<AiCreation>>((ref) async {
+final recentCreationsProvider = FutureProvider<List<DesignCreation>>((ref) async {
   final userId = Supabase.instance.client.auth.currentUser?.id;
   if (userId == null) return [];
 
-  final repo = ref.read(aiCreationRepositoryProvider);
+  final repo = ref.read(designCreationRepositoryProvider);
   return repo.getCreations(userId: userId, limit: 10, offset: 0);
 });
 
@@ -221,7 +221,7 @@ class DeleteCreationState {
 
 class DeleteCreationNotifier extends Notifier<DeleteCreationState> {
   Timer? _deleteTimer;
-  AiCreation? _pendingDeletion;
+  DesignCreation? _pendingDeletion;
   int? _pendingIndex;
 
   @override
@@ -233,12 +233,12 @@ class DeleteCreationNotifier extends Notifier<DeleteCreationState> {
   /// If the SnackBar is not undone in 4 seconds, deletes permanently.
   Future<void> initiateDeletion(
     BuildContext context,
-    AiCreation creation,
+    DesignCreation creation,
   ) async {
     // If there is a pending deletion already, finalize it immediately
     _finalizePendingDeleteImmediately();
 
-    final creationsState = ref.read(aiCreationsProvider).value;
+    final creationsState = ref.read(designCreationsProvider).value;
     if (creationsState == null) return;
 
     final index = creationsState.creations.indexWhere((c) => c.id == creation.id);
@@ -248,7 +248,7 @@ class DeleteCreationNotifier extends Notifier<DeleteCreationState> {
     _pendingIndex = index;
 
     // Immediately update UI for instant feel
-    ref.read(aiCreationsProvider.notifier).removeCreationFromState(creation.id);
+    ref.read(designCreationsProvider.notifier).removeCreationFromState(creation.id);
 
     // Show undo snackbar
     ScaffoldMessenger.of(context).clearSnackBars();
@@ -285,7 +285,7 @@ class DeleteCreationNotifier extends Notifier<DeleteCreationState> {
     if (_pendingDeletion != null && _pendingIndex != null) {
       // Re-insert into list
       ref
-          .read(aiCreationsProvider.notifier)
+          .read(designCreationsProvider.notifier)
           .insertCreationIntoState(_pendingIndex!, _pendingDeletion!);
       _pendingDeletion = null;
       _pendingIndex = null;
@@ -310,7 +310,7 @@ class DeleteCreationNotifier extends Notifier<DeleteCreationState> {
     state = const DeleteCreationState(status: DeleteStatus.loading);
 
     try {
-      final repo = ref.read(aiCreationRepositoryProvider);
+      final repo = ref.read(designCreationRepositoryProvider);
       await repo.deleteCreation(
         target.id,
         imageUrlsToDelete: [

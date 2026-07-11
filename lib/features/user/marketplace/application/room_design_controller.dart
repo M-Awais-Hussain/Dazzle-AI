@@ -11,20 +11,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:ayyy/core/errors/exceptions.dart';
 import 'package:ayyy/core/services/remove_bg_service.dart';
-import 'package:ayyy/core/services/gemini_image_service.dart';
-import 'package:ayyy/features/user/marketplace/data/ai_room_repository.dart';
-import 'package:ayyy/features/user/marketplace/domain/ai_room_generation.dart';
+import 'package:ayyy/core/services/image_compositor_service.dart';
+import 'package:ayyy/features/user/marketplace/data/room_design_repository.dart';
+import 'package:ayyy/features/user/marketplace/domain/room_design_generation.dart';
 import 'package:ayyy/features/user/marketplace/domain/product.dart';
-import 'package:ayyy/features/user/marketplace/data/ai_creation_repository.dart';
-import 'package:ayyy/features/user/marketplace/domain/ai_creation.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_creations_provider.dart';
+import 'package:ayyy/features/user/marketplace/data/design_creation_repository.dart';
+import 'package:ayyy/features/user/marketplace/domain/design_creation.dart';
+import 'package:ayyy/features/user/marketplace/application/design_creations_provider.dart';
 import 'package:ayyy/features/user/marketplace/data/product_variant_repository.dart';
 
 // ──────────────────────────────────────────
 // State Model
 // ──────────────────────────────────────────
 
-enum AiRoomStep {
+enum RoomDesignStep {
   idle,
   removingBackground,
   canvasEditor,
@@ -36,8 +36,8 @@ enum AiRoomStep {
   error,
 }
 
-class AiRoomState {
-  final AiRoomStep step;
+class RoomDesignState {
+  final RoomDesignStep step;
   final String? errorMessage;
   final String? roomImagePath;
   final Uint8List? generatedImageBytes;
@@ -49,8 +49,8 @@ class AiRoomState {
   final String? selectedColorName;
   final String? transparentImageUrl;
 
-  const AiRoomState({
-    this.step = AiRoomStep.idle,
+  const RoomDesignState({
+    this.step = RoomDesignStep.idle,
     this.errorMessage,
     this.roomImagePath,
     this.generatedImageBytes,
@@ -63,8 +63,8 @@ class AiRoomState {
     this.transparentImageUrl,
   });
 
-  AiRoomState copyWith({
-    AiRoomStep? step,
+  RoomDesignState copyWith({
+    RoomDesignStep? step,
     String? errorMessage,
     String? roomImagePath,
     Uint8List? generatedImageBytes,
@@ -76,7 +76,7 @@ class AiRoomState {
     String? selectedColorName,
     String? transparentImageUrl,
   }) {
-    return AiRoomState(
+    return RoomDesignState(
       step: step ?? this.step,
       errorMessage: errorMessage ?? this.errorMessage,
       roomImagePath: roomImagePath ?? this.roomImagePath,
@@ -94,52 +94,52 @@ class AiRoomState {
 
   /// Human-readable step message for the loading UI.
   String get stepMessage => switch (step) {
-        AiRoomStep.idle => '',
-        AiRoomStep.removingBackground => 'Preparing product for your room...',
-        AiRoomStep.canvasEditor => 'Position your product',
-        AiRoomStep.analyzingRoom => 'AI is analyzing your room...',
-        AiRoomStep.compositing => 'AI is refining realism and lighting...',
-        AiRoomStep.completed => 'Design complete!',
-        AiRoomStep.saving => 'Saving your design...',
-        AiRoomStep.saved => 'Saved to your history!',
-        AiRoomStep.error => errorMessage ?? 'Something went wrong',
+        RoomDesignStep.idle => '',
+        RoomDesignStep.removingBackground => 'Preparing product for your room...',
+        RoomDesignStep.canvasEditor => 'Position your product',
+        RoomDesignStep.analyzingRoom => 'Analyzing your room...',
+        RoomDesignStep.compositing => 'Refining realism and lighting...',
+        RoomDesignStep.completed => 'Design complete!',
+        RoomDesignStep.saving => 'Saving your design...',
+        RoomDesignStep.saved => 'Saved to your history!',
+        RoomDesignStep.error => errorMessage ?? 'Something went wrong',
       };
 
   /// Step index for progress indicator (0-based, 4 total steps).
   int get stepIndex => switch (step) {
-        AiRoomStep.idle => 0,
-        AiRoomStep.removingBackground => 0,
-        AiRoomStep.canvasEditor => 1,
-        AiRoomStep.analyzingRoom => 2,
-        AiRoomStep.compositing => 2,
-        AiRoomStep.completed => 3,
-        AiRoomStep.saving => 3,
-        AiRoomStep.saved => 3,
-        AiRoomStep.error => -1,
+        RoomDesignStep.idle => 0,
+        RoomDesignStep.removingBackground => 0,
+        RoomDesignStep.canvasEditor => 1,
+        RoomDesignStep.analyzingRoom => 2,
+        RoomDesignStep.compositing => 2,
+        RoomDesignStep.completed => 3,
+        RoomDesignStep.saving => 3,
+        RoomDesignStep.saved => 3,
+        RoomDesignStep.error => -1,
       };
 
   bool get isProcessing =>
-      step == AiRoomStep.removingBackground ||
-      step == AiRoomStep.analyzingRoom ||
-      step == AiRoomStep.compositing;
+      step == RoomDesignStep.removingBackground ||
+      step == RoomDesignStep.analyzingRoom ||
+      step == RoomDesignStep.compositing;
 
   bool get isDone =>
-      step == AiRoomStep.completed ||
-      step == AiRoomStep.saving ||
-      step == AiRoomStep.saved;
+      step == RoomDesignStep.completed ||
+      step == RoomDesignStep.saving ||
+      step == RoomDesignStep.saved;
 
-  bool get isSaved => step == AiRoomStep.saved;
+  bool get isSaved => step == RoomDesignStep.saved;
 }
 
 // ──────────────────────────────────────────
 // Controller (Riverpod Notifier)
 // ──────────────────────────────────────────
 
-class AiRoomController extends Notifier<AiRoomState> {
+class RoomDesignController extends Notifier<RoomDesignState> {
   CancelToken? _cancelToken;
 
   @override
-  AiRoomState build() => const AiRoomState();
+  RoomDesignState build() => const RoomDesignState();
 
   /// Step 1: Prepare canvas by removing background and returning state.
   Future<void> prepareCanvas({
@@ -151,8 +151,8 @@ class AiRoomController extends Notifier<AiRoomState> {
 
     _cancelToken = CancelToken();
 
-    state = AiRoomState(
-      step: AiRoomStep.removingBackground,
+    state = RoomDesignState(
+      step: RoomDesignStep.removingBackground,
       product: product,
       selectedProductImageUrl: selectedImageUrl,
       selectedVariantImageUrl: selectedImageUrl, // initialize with the same
@@ -170,26 +170,26 @@ class AiRoomController extends Notifier<AiRoomState> {
       if (_isCancelled) return;
 
       state = state.copyWith(
-        step: AiRoomStep.canvasEditor,
+        step: RoomDesignStep.canvasEditor,
         transparentProductBytes: transparentBytes,
       );
     } on ServerException catch (e) {
       debugPrint('[AiRoom] prepareCanvas ServerException: ${e.message}');
       state = state.copyWith(
-        step: AiRoomStep.error,
+        step: RoomDesignStep.error,
         errorMessage: e.message,
       );
     } on DioException catch (e) {
       if (CancelToken.isCancel(e)) return;
       debugPrint('[AiRoom] prepareCanvas DioException: $e');
       state = state.copyWith(
-        step: AiRoomStep.error,
+        step: RoomDesignStep.error,
         errorMessage: _friendlyError(e.toString()),
       );
     } catch (e) {
       debugPrint('[AiRoom] prepareCanvas error: $e');
       state = state.copyWith(
-        step: AiRoomStep.error,
+        step: RoomDesignStep.error,
         errorMessage: _friendlyError(e.toString()),
       );
     }
@@ -197,7 +197,7 @@ class AiRoomController extends Notifier<AiRoomState> {
 
   /// Switch to a different variant image while keeping canvas state
   Future<void> switchVariant(String newImageUrl, {String? colorName, String? transparentImageUrl, String? imageId}) async {
-    if (state.step != AiRoomStep.canvasEditor) return;
+    if (state.step != RoomDesignStep.canvasEditor) return;
 
     // We don't want to show the full loading screen, just update state so UI can show a small spinner
     final previousBytes = state.transparentProductBytes;
@@ -218,7 +218,7 @@ class AiRoomController extends Notifier<AiRoomState> {
         
         // Save back to DB for future speedups
         if (imageId != null) {
-          final repo = ref.read(aiRoomRepositoryProvider);
+          final repo = ref.read(roomDesignRepositoryProvider);
           final newTransparentUrl = await repo.uploadTransparentImage(state.product!.id, newTransparentBytes);
           await ref.read(userProductVariantRepositoryProvider).updateTransparentImageUrl(imageId, newTransparentUrl);
         }
@@ -258,10 +258,10 @@ class AiRoomController extends Notifier<AiRoomState> {
     _cancelToken = CancelToken();
 
     try {
-      state = state.copyWith(step: AiRoomStep.compositing);
+      state = state.copyWith(step: RoomDesignStep.compositing);
       debugPrint('[AiRoom] Step 2: Compositing images with canvas data...');
 
-      final gemini = ref.read(geminiImageServiceProvider);
+      final gemini = ref.read(imageCompositorServiceProvider);
       
       final Uint8List roomBytes;
       if (state.roomImagePath!.startsWith('http')) {
@@ -274,7 +274,7 @@ class AiRoomController extends Notifier<AiRoomState> {
         roomBytes = await File(state.roomImagePath!).readAsBytes();
       }
 
-      // We'll update GeminiImageService to handle these exact parameters
+      // We'll update ImageCompositorService to handle these exact parameters
       final compositeBytes = await gemini.compositeImagesWithTransform(
         roomImageBytes: roomBytes,
         productImageBytes: state.transparentProductBytes!,
@@ -289,13 +289,13 @@ class AiRoomController extends Notifier<AiRoomState> {
       );
 
       state = state.copyWith(
-        step: AiRoomStep.completed,
+        step: RoomDesignStep.completed,
         generatedImageBytes: compositeBytes,
       );
       debugPrint('[AiRoom] Canvas Pipeline completed successfully!');
     } catch (e) {
       state = state.copyWith(
-        step: AiRoomStep.error,
+        step: RoomDesignStep.error,
         errorMessage: _friendlyError(e.toString()),
       );
     }
@@ -305,16 +305,16 @@ class AiRoomController extends Notifier<AiRoomState> {
   Future<void> saveToHistory() async {
     if (state.generatedImageBytes == null ||
         state.product == null ||
-        state.step == AiRoomStep.saving ||
-        state.step == AiRoomStep.saved) {
+        state.step == RoomDesignStep.saving ||
+        state.step == RoomDesignStep.saved) {
       return;
     }
 
     final previousStep = state.step;
-    state = state.copyWith(step: AiRoomStep.saving);
+    state = state.copyWith(step: RoomDesignStep.saving);
 
     try {
-      final repo = ref.read(aiRoomRepositoryProvider);
+      final repo = ref.read(roomDesignRepositoryProvider);
       final userId = Supabase.instance.client.auth.currentUser?.id;
       if (userId == null) {
         throw Exception('User not authenticated');
@@ -378,7 +378,7 @@ class AiRoomController extends Notifier<AiRoomState> {
       );
 
       // Save record to database
-      final generation = AiRoomGeneration(
+      final generation = RoomDesignGeneration(
         id: '', // Auto-generated by Supabase
         userId: userId,
         productId: product.id,
@@ -393,9 +393,9 @@ class AiRoomController extends Notifier<AiRoomState> {
       await repo.saveGeneration(generation);
 
       // ALSO save record to ai_creations table
-      // Note: We don't have the transformation state directly in AiRoomState yet,
+      // Note: We don't have the transformation state directly in RoomDesignState yet,
       // but it could be saved if we persist it to the state. For now, it will be null unless passed.
-      final creation = AiCreation(
+      final creation = DesignCreation(
         id: '',
         userId: userId,
         productId: product.id,
@@ -410,16 +410,16 @@ class AiRoomController extends Notifier<AiRoomState> {
         generationVersion: 'v2_canvas',
       );
 
-      await ref.read(aiCreationRepositoryProvider).saveCreation(creation);
+      await ref.read(designCreationRepositoryProvider).saveCreation(creation);
 
       state = state.copyWith(
-        step: AiRoomStep.saved,
+        step: RoomDesignStep.saved,
         generatedImageUrl: generatedImageUrl,
       );
 
       // Invalidate history caches
-      ref.invalidate(aiRoomHistoryProvider);
-      ref.invalidate(aiCreationsProvider);
+      ref.invalidate(roomDesignHistoryProvider);
+      ref.invalidate(designCreationsProvider);
       ref.invalidate(recentCreationsProvider);
 
       debugPrint('[AiRoom] Saved to history successfully');
@@ -450,18 +450,18 @@ class AiRoomController extends Notifier<AiRoomState> {
   void cancelGeneration() {
     _cancelToken?.cancel('User cancelled');
     _cancelToken = null;
-    state = const AiRoomState();
+    state = const RoomDesignState();
   }
 
   /// Reset state back to idle.
   void reset() {
     _cancelToken?.cancel('Reset');
     _cancelToken = null;
-    state = const AiRoomState();
+    state = const RoomDesignState();
   }
 
   bool get _isCancelled =>
-      _cancelToken?.isCancelled == true || state.step == AiRoomStep.idle;
+      _cancelToken?.isCancelled == true || state.step == RoomDesignStep.idle;
 
   String _friendlyError(String error) {
     if (error.contains('SocketException') ||
@@ -476,7 +476,7 @@ class AiRoomController extends Notifier<AiRoomState> {
       return 'Background removal failed. Please try again.';
     }
     if (error.contains('Gemini') || error.contains('AI analysis')) {
-      return 'AI room analysis failed. Please try again.';
+      return 'Room analysis failed. Please try again.';
     }
     if (error.contains('coordinates')) {
       return 'Could not determine product placement. Please try a different room photo.';
@@ -489,14 +489,14 @@ class AiRoomController extends Notifier<AiRoomState> {
 // Providers
 // ──────────────────────────────────────────
 
-final aiRoomControllerProvider =
-    NotifierProvider<AiRoomController, AiRoomState>(() {
-  return AiRoomController();
+final roomDesignControllerProvider =
+    NotifierProvider<RoomDesignController, RoomDesignState>(() {
+  return RoomDesignController();
 });
 
-final aiRoomHistoryProvider =
-    FutureProvider<List<AiRoomGeneration>>((ref) {
+final roomDesignHistoryProvider =
+    FutureProvider<List<RoomDesignGeneration>>((ref) {
   final userId = Supabase.instance.client.auth.currentUser?.id;
   if (userId == null) return [];
-  return ref.watch(aiRoomRepositoryProvider).getGenerationHistory(userId);
+  return ref.watch(roomDesignRepositoryProvider).getGenerationHistory(userId);
 });

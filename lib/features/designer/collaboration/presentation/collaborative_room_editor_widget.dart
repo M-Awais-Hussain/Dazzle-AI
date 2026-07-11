@@ -109,12 +109,12 @@ class _CollaborativeRoomEditorWidgetState extends ConsumerState<CollaborativeRoo
                             await ref.read(designerProjectProvider(widget.requestId)).generateAiPreview();
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('AI Enhanced Preview Generated!')),
+                                const SnackBar(content: Text('Enhanced Preview Generated!')),
                               );
                             }
                           },
                           icon: const Icon(Icons.auto_awesome),
-                          label: const Text('Generate AI Preview', style: TextStyle(fontWeight: FontWeight.bold)),
+                          label: const Text('Generate Preview', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),

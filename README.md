@@ -1,14 +1,14 @@
-# Dazzle-AI - AI Furniture & Room Designer Collaboration Platform
+# Dazzle - AI Furniture & Room Designer Collaboration Platform
 
-Dazzle-AI is a modern, comprehensive Flutter application that acts as a collaborative spatial design platform connecting **Users**, **Interior Designers**, and **Marketplace Owners**. 
+Dazzle is a modern, comprehensive Flutter application that acts as a collaborative spatial design platform connecting **Users**, **Interior Designers**, and **Marketplace Owners**. 
 
-Instead of a traditional shopping cart experience, Dazzle-AI focuses on interactive, real-time spatial design. It empowers users to visualize furniture in their own rooms using an advanced 2.5D perspective canvas, configure dynamic product variants, hire professional designers, and collaborate with them live on a synchronized canvas.
+Instead of a traditional shopping cart experience, Dazzle focuses on interactive, real-time spatial design. It empowers users to visualize furniture in their own rooms using an advanced 2.5D perspective canvas, configure dynamic product variants, hire professional designers, and collaborate with them live on a synchronized canvas.
 
 ---
 
 ## Project Overview
 
-Dazzle-AI redefines how spaces are visualized, designed, and customized. It bridges the gap between client imagination and professional design expertise through real-time communication, custom spatial canvas controls, and smart image processing.
+Dazzle redefines how spaces are visualized, designed, and customized. It bridges the gap between client imagination and professional design expertise through real-time communication, custom spatial canvas controls, and smart image processing.
 
 ### Key Roles
 - **Users**: Can upload room photos, utilize the interactive 2.5D canvas to place and adjust furniture, swap product colors or layout configurations, hire professional designers, and participate in live real-time design collaborations.
@@ -20,7 +20,7 @@ Dazzle-AI redefines how spaces are visualized, designed, and customized. It brid
 ## Key Features
 
 ### 1. Interactive 2.5D Perspective Canvas
-Dazzle-AI features a sophisticated custom-drawn canvas (`PerspectiveProductCanvas`) to position transparent cutouts of furniture inside room photos:
+Dazzle features a sophisticated custom-drawn canvas (`PerspectiveProductCanvas`) to position transparent cutouts of furniture inside room photos:
 - **Spatial Positioning & Transforms**: Supports multi-touch translation, scaling, and rotation.
 - **2.5D Perspective Tilts**: Allows adjustment of X-axis and Y-axis tilt angles via a Matrix4 transform with perspective distortion (`setEntry(3, 2, 0.001)`).
 - **Depth-Based Scaling**: Automatically adjusts the scale of the furniture based on its vertical position (`dy`) on the canvas—simulating realistic depth and distance as objects move higher (farther) or lower (closer).
@@ -56,7 +56,7 @@ The application is built on a modern and robust Flutter stack:
 
 ---
 
-## How the AI & API Integrations Work
+## How the API Integrations Work
 
 The core magic of the application is handled through coordinated API services:
 
@@ -64,12 +64,7 @@ The core magic of the application is handled through coordinated API services:
    - When a product or variant is loaded into the canvas, the raw image is processed via the **Remove.bg API** to isolate the furniture item.
    - The application uploads and caches these transparent cutout images to Supabase Storage to optimize load times and minimize API usage.
 
-2. **AI Spatial & Layout Analysis (Google Gemini API)**
-   - To offer an automated alternative, the transparent furniture cutout and the user's room photo are packaged alongside metadata (such as product dimensions and room type).
-   - This data is sent to the **Google Gemini 2.5 Flash API**.
-   - Gemini acts as an AI interior designer, evaluating the geometry, lighting, and perspective of the room to return precise normalized coordinates (bounding boxes) for the best placement.
-
-3. **Rendering, Compositing & Live Synchronisation**
+2. **Rendering, Compositing & Live Synchronisation**
    - The Flutter frontend composites the assets perfectly on the 2.5D canvas using a custom Matrix4 transform matrix.
    - During collaboration sessions, updates to these transforms are broadcasted across WebSockets in real-time, allowing both users to see movement, tilts, and variant updates instantly.
 
@@ -82,14 +77,13 @@ Follow these steps to set up and run the project locally.
 ### Prerequisites
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (version 3.11.5 or compatible)
 - A Supabase Project (with the provided SQL migrations applied)
-- Google Gemini API Key
 - Remove.bg API Key
 
 ### Setup Instructions
 
 1. **Clone the repository** and navigate to the project directory:
    ```bash
-   cd Dazzle-AI
+   cd Dazzle
    ```
 
 2. **Install dependencies**:
@@ -109,7 +103,6 @@ Follow these steps to set up and run the project locally.
    ```env
    SUPABASE_URL=your_supabase_url
    SUPABASE_ANON_KEY=your_supabase_anon_key
-   GEMINI_API_KEY=your_gemini_api_key
    REMOVE_BG_API_KEY=your_remove_bg_api_key
    ```
    *(Ensure your `.env` file is declared in your `pubspec.yaml` assets so Flutter can read it).*

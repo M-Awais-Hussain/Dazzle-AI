@@ -7,26 +7,26 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_creations_provider.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_room_controller.dart';
+import 'package:ayyy/features/user/marketplace/application/design_creations_provider.dart';
+import 'package:ayyy/features/user/marketplace/application/room_design_controller.dart';
 import 'package:ayyy/features/user/marketplace/data/product_repository.dart';
-import 'package:ayyy/features/user/marketplace/domain/ai_creation.dart';
+import 'package:ayyy/features/user/marketplace/domain/design_creation.dart';
 import 'package:ayyy/features/user/marketplace/domain/product.dart';
 import 'package:ayyy/features/user/designer_directory/application/designer_directory_providers.dart';
 
-class AiCreationDetailScreen extends ConsumerStatefulWidget {
+class DesignCreationDetailScreen extends ConsumerStatefulWidget {
   final String creationId;
 
-  const AiCreationDetailScreen({
+  const DesignCreationDetailScreen({
     super.key,
     required this.creationId,
   });
 
   @override
-  ConsumerState<AiCreationDetailScreen> createState() => _AiCreationDetailScreenState();
+  ConsumerState<DesignCreationDetailScreen> createState() => _DesignCreationDetailScreenState();
 }
 
-class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen> {
+class _DesignCreationDetailScreenState extends ConsumerState<DesignCreationDetailScreen> {
   // Comparative mode: 0 = Slider, 1 = Generated, 2 = Original
   int _viewMode = 0;
   double _sliderPos = 0.5;
@@ -92,7 +92,7 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
     );
   }
 
-  Widget _buildContent(BuildContext context, AiCreation creation) {
+  Widget _buildContent(BuildContext context, DesignCreation creation) {
     final dateStr = DateFormat('MMMM d, yyyy • hh:mm a').format(creation.createdAt);
 
     return SingleChildScrollView(
@@ -215,7 +215,7 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
 
                   // Prompt Container
                   Text(
-                    'AI GENERATION PROMPT',
+                    'GENERATION PROMPT',
                     style: GoogleFonts.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
@@ -388,7 +388,7 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
     );
   }
 
-  Widget _buildComparisonImage(AiCreation creation) {
+  Widget _buildComparisonImage(DesignCreation creation) {
     if (_viewMode == 1) {
       // Generated Image only
       return Stack(
@@ -546,7 +546,7 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
     );
   }
 
-  Future<void> _triggerRegeneration(BuildContext context, WidgetRef ref, AiCreation creation) async {
+  Future<void> _triggerRegeneration(BuildContext context, WidgetRef ref, DesignCreation creation) async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -564,7 +564,7 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
         Navigator.pop(context); // pop loading
         
         // Prepare canvas with existing generation data
-        ref.read(aiRoomControllerProvider.notifier).prepareCanvas(
+        ref.read(roomDesignControllerProvider.notifier).prepareCanvas(
           product: product,
           selectedImageUrl: creation.selectedProductImageUrl,
           roomImagePath: creation.roomImageUrl,
@@ -582,7 +582,7 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
     }
   }
 
-  void _copyDesignLink(BuildContext context, AiCreation creation) {
+  void _copyDesignLink(BuildContext context, DesignCreation creation) {
     Clipboard.setData(ClipboardData(text: creation.generatedImageUrl));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -598,7 +598,7 @@ class _AiCreationDetailScreenState extends ConsumerState<AiCreationDetailScreen>
     );
   }
 
-  void _showDeleteConfirmDialog(BuildContext context, WidgetRef ref, AiCreation creation) {
+  void _showDeleteConfirmDialog(BuildContext context, WidgetRef ref, DesignCreation creation) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -708,7 +708,7 @@ class _ViewModeTabButton extends StatelessWidget {
 
 // ── PRODUCT INTEGRATION CARD ──
 class _ProductIntegrationCard extends ConsumerWidget {
-  final AiCreation creation;
+  final DesignCreation creation;
   final WidgetRef ref;
 
   const _ProductIntegrationCard({

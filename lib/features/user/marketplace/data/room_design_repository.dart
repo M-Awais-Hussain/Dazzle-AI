@@ -5,9 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:ayyy/core/errors/exceptions.dart';
-import 'package:ayyy/features/user/marketplace/domain/ai_room_generation.dart';
+import 'package:ayyy/features/user/marketplace/domain/room_design_generation.dart';
 
-final aiRoomRepositoryProvider = Provider<AiRoomRepository>((ref) {
+final roomDesignRepositoryProvider = Provider<AiRoomRepository>((ref) {
   return AiRoomRepository(Supabase.instance.client);
 });
 
@@ -77,7 +77,7 @@ class AiRoomRepository {
   // Database Operations
   // ──────────────────────────────────────────
 
-  Future<void> saveGeneration(AiRoomGeneration generation) async {
+  Future<void> saveGeneration(RoomDesignGeneration generation) async {
     try {
       await _supabase.from(_table).insert(generation.toInsertJson());
       debugPrint('[AiRoomRepo] Generation saved to database');
@@ -86,7 +86,7 @@ class AiRoomRepository {
     }
   }
 
-  Future<List<AiRoomGeneration>> getGenerationHistory(String userId) async {
+  Future<List<RoomDesignGeneration>> getGenerationHistory(String userId) async {
     try {
       final response = await _supabase
           .from(_table)
@@ -95,7 +95,7 @@ class AiRoomRepository {
           .order('created_at', ascending: false);
       return (response as List)
           .map((json) =>
-              AiRoomGeneration.fromJson(Map<String, dynamic>.from(json as Map)))
+              RoomDesignGeneration.fromJson(Map<String, dynamic>.from(json as Map)))
           .toList();
     } catch (e) {
       throw ServerException('Failed to fetch generation history: $e');

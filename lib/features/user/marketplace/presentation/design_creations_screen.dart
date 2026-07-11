@@ -6,19 +6,19 @@ import 'package:intl/intl.dart';
 import 'package:ayyy/core/theme/app_colors.dart';
 import 'package:ayyy/core/widgets/dazzle_app_bar.dart';
 import 'package:ayyy/core/widgets/dazzle_bottom_nav.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_creations_provider.dart';
-import 'package:ayyy/features/user/marketplace/application/ai_room_controller.dart';
+import 'package:ayyy/features/user/marketplace/application/design_creations_provider.dart';
+import 'package:ayyy/features/user/marketplace/application/room_design_controller.dart';
 import 'package:ayyy/features/user/marketplace/data/product_repository.dart';
-import 'package:ayyy/features/user/marketplace/domain/ai_creation.dart';
+import 'package:ayyy/features/user/marketplace/domain/design_creation.dart';
 
-class AiCreationsScreen extends ConsumerStatefulWidget {
-  const AiCreationsScreen({super.key});
+class DesignCreationsScreen extends ConsumerStatefulWidget {
+  const DesignCreationsScreen({super.key});
 
   @override
-  ConsumerState<AiCreationsScreen> createState() => _AiCreationsScreenState();
+  ConsumerState<DesignCreationsScreen> createState() => _DesignCreationsScreenState();
 }
 
-class _AiCreationsScreenState extends ConsumerState<AiCreationsScreen> {
+class _DesignCreationsScreenState extends ConsumerState<DesignCreationsScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
@@ -38,13 +38,13 @@ class _AiCreationsScreenState extends ConsumerState<AiCreationsScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      ref.read(aiCreationsProvider.notifier).fetchNextPage();
+      ref.read(designCreationsProvider.notifier).fetchNextPage();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final stateAsync = ref.watch(aiCreationsProvider);
+    final stateAsync = ref.watch(designCreationsProvider);
     final filter = ref.watch(aiCreationsFilterProvider);
 
     return Scaffold(
@@ -54,7 +54,7 @@ class _AiCreationsScreenState extends ConsumerState<AiCreationsScreen> {
         currentIndex: 2,
       ), // Index 2 is DESIGNS
       body: RefreshIndicator(
-        onRefresh: () => ref.read(aiCreationsProvider.notifier).refresh(),
+        onRefresh: () => ref.read(designCreationsProvider.notifier).refresh(),
         color: AppColors.primaryDark,
         backgroundColor: Colors.white,
         child: CustomScrollView(
@@ -78,7 +78,7 @@ class _AiCreationsScreenState extends ConsumerState<AiCreationsScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'My AI Creations',
+                      'My Design Creations',
                       style: GoogleFonts.inter(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -399,7 +399,7 @@ class _AiCreationsScreenState extends ConsumerState<AiCreationsScreen> {
 // ──────────────────────────────────────────
 
 class _CreationCard extends ConsumerWidget {
-  final AiCreation creation;
+  final DesignCreation creation;
 
   const _CreationCard({required this.creation});
 
@@ -704,8 +704,8 @@ class _CreationCard extends ConsumerWidget {
       if (context.mounted) {
         Navigator.pop(context); // pop loading
 
-        // 2. Prepare state in aiRoomControllerProvider
-        ref.read(aiRoomControllerProvider.notifier).prepareCanvas(
+        // 2. Prepare state in roomDesignControllerProvider
+        ref.read(roomDesignControllerProvider.notifier).prepareCanvas(
           product: product,
           selectedImageUrl: creation.selectedProductImageUrl,
           roomImagePath: creation.roomImageUrl,

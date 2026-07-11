@@ -74,7 +74,7 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Select how you would like to experience the future of AI-driven interior architecture and design.',
+                'Select how you would like to experience the future of interior architecture and design.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: AppColors.textSecondary,
                   height: 1.5,
